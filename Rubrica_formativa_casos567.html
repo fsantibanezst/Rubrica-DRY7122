@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rúbrica Formativa — Casos 5, 6 y 7 — DRY7122</title>
+<style>
+  :root {
+    --azul-osc:  #1F3864;
+    --azul-med:  #2E75B6;
+    --azul-bg:   #EBF3FA;
+    --verde:     #375623;
+    --verde-bg:  #E2EFDA;
+    --rojo:      #9C0006;
+    --rojo-bg:   #FCE4D6;
+    --naranja:   #C55A11;
+    --naranja-bg:#FEF0E6;
+    --gris:      #F5F5F5;
+    --gris-med:  #D9D9D9;
+    --amarillo-bg:#FFF9E6;
+    --texto:     #1a1a1a;
+    --texto-sec: #555;
+    --borde:     #d0d7de;
+    --radio:     8px;
+    --sombra:    0 1px 3px rgba(0,0,0,0.1);
+    --c5:#5B6EAF; --c5-bg:#EEF1FA;
+    --c6:#2A7A4B; --c6-bg:#E8F5EE;
+    --c7:#9B4A00; --c7-bg:#FFF0E4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--texto);min-height:100vh;}
+
+  /* ── HEADER ── */
+  .header{background:linear-gradient(135deg,var(--azul-osc) 0%,var(--azul-med) 100%);color:white;padding:28px 40px;}
+  .header h1{font-size:21px;font-weight:700;letter-spacing:-.3px;}
+  .header p{font-size:13px;opacity:.8;margin-top:4px;}
+  .header-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .badge-f{display:inline-block;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 12px;border-radius:99px;margin-left:10px;vertical-align:middle;}
+  .btn{padding:8px 16px;border-radius:6px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-white{background:white;color:var(--azul-osc);}
+  .btn-white:hover{background:#e8f0fe;}
+  .btn-outline{background:transparent;color:white;border:1.5px solid rgba(255,255,255,.5);}
+  .btn-outline:hover{background:rgba(255,255,255,.1);}
+  .btn-danger{background:#c62828;color:white;}
+  .btn-danger:hover{background:#b71c1c;}
+  .btn-green{background:#2e7d32;color:white;}
+  .btn-green:hover{background:#1b5e20;}
+
+  /* ── LAYOUT ── */
+  .main{max-width:1220px;margin:0 auto;padding:28px 20px;}
+
+  /* ── PANEL GRUPOS ── */
+  .grupos-panel{background:white;border-radius:var(--radio);border:1px solid var(--borde);padding:20px;margin-bottom:24px;box-shadow:var(--sombra);}
+  .grupos-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:1px solid var(--borde);padding-bottom:12px;flex-wrap:wrap;gap:10px;}
+  .grupos-panel-head h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--azul-med);}
+  .grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .grupo-card-item{border:2px solid var(--borde);border-radius:var(--radio);padding:14px 16px;cursor:pointer;transition:all .18s;position:relative;background:white;}
+  .grupo-card-item:hover{border-color:var(--azul-med);background:var(--azul-bg);}
+  .grupo-card-item.activo{border-color:var(--azul-med);background:var(--azul-bg);box-shadow:0 0 0 3px rgba(46,117,182,.15);}
+  .grupo-card-item .gc-color-bar{height:4px;border-radius:99px;margin-bottom:10px;}
+  .grupo-card-item .gc-nombre{font-size:14px;font-weight:700;color:var(--texto);margin-bottom:4px;padding-right:24px;}
+  .grupo-card-item .gc-integr{font-size:11px;color:var(--texto-sec);line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .grupo-card-item .gc-seccion{font-size:10px;color:var(--texto-sec);margin-bottom:6px;}
+  .grupo-card-item .gc-revs{font-size:11px;font-weight:700;color:var(--azul-med);}
+  .grupo-card-item .gc-activo-badge{position:absolute;top:10px;right:10px;background:var(--azul-med);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;}
+  .grupo-card-item .gc-actions{display:flex;gap:6px;margin-top:10px;}
+  .gc-btn{padding:3px 10px;font-size:11px;border-radius:4px;border:1px solid var(--borde);background:white;cursor:pointer;font-weight:600;color:var(--texto-sec);transition:all .12s;}
+  .gc-btn:hover{background:var(--gris);}
+  .gc-btn.danger{color:var(--rojo);border-color:var(--rojo-bg);}
+  .gc-btn.danger:hover{background:var(--rojo-bg);}
+  .grupos-empty{text-align:center;padding:28px;color:var(--texto-sec);font-size:13px;border:1px dashed var(--borde);border-radius:var(--radio);}
+
+  /* ── BANNER SIN GRUPO ── */
+  .no-grupo-banner{background:var(--amarillo-bg);border:1.5px dashed var(--naranja);border-radius:var(--radio);padding:28px;text-align:center;margin-bottom:24px;}
+  .no-grupo-banner .ngb-icon{font-size:36px;margin-bottom:8px;}
+  .no-grupo-banner h3{font-size:16px;font-weight:700;color:var(--naranja);margin-bottom:6px;}
+  .no-grupo-banner p{font-size:13px;color:var(--texto-sec);}
+
+  /* ── BANNER GRUPO ACTIVO ── */
+  .grupo-activo-banner{background:var(--azul-bg);border:1.5px solid var(--azul-med);border-radius:var(--radio);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .gab-color{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+  .gab-info{flex:1;min-width:0;}
+  .gab-nombre{font-size:15px;font-weight:700;color:var(--azul-osc);}
+  .gab-integr{font-size:12px;color:var(--texto-sec);margin-top:2px;}
+  .gab-seccion{font-size:11px;color:var(--azul-med);margin-top:1px;}
+  .gab-revcount{background:var(--azul-med);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+
+  /* ── SCORE PANEL ── */
+  .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .score-card{background:white;border-radius:var(--radio);padding:16px 20px;box-shadow:var(--sombra);border:1px solid var(--borde);}
+  .score-card .lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--texto-sec);margin-bottom:6px;}
+  .score-card .val{font-size:28px;font-weight:700;color:var(--azul-osc);line-height:1;}
+  .score-card .val.aprobado{color:var(--verde);}
+  .score-card .val.reprobado{color:var(--rojo);}
+  .score-card .sub{font-size:11px;color:var(--texto-sec);margin-top:4px;}
+  .progress-global{height:8px;background:var(--gris);border-radius:99px;overflow:hidden;margin-top:8px;}
+  .progress-global-fill{height:100%;border-radius:99px;background:var(--azul-med);transition:width .4s;}
+
+  /* ── SCORES POR CASO ── */
+  .caso-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .caso-score-card{border-radius:var(--radio);padding:14px 18px;border:1px solid;}
+  .caso-score-card.c5{background:var(--c5-bg);border-color:var(--c5);}
+  .caso-score-card.c6{background:var(--c6-bg);border-color:var(--c6);}
+  .caso-score-card.c7{background:var(--c7-bg);border-color:var(--c7);}
+  .cs-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .c5 .cs-lbl{color:var(--c5);} .c6 .cs-lbl{color:var(--c6);} .c7 .cs-lbl{color:var(--c7);}
+  .cs-val{font-size:22px;font-weight:800;}
+  .c5 .cs-val{color:var(--c5);} .c6 .cs-val{color:var(--c6);} .c7 .cs-val{color:var(--c7);}
+  .cs-sub{font-size:11px;color:var(--texto-sec);margin-top:2px;}
+  .caso-bar{height:5px;border-radius:99px;background:rgba(0,0,0,.08);margin-top:8px;overflow:hidden;}
+  .caso-bar-fill{height:100%;border-radius:99px;transition:width .4s;}
+  .c5 .caso-bar-fill{background:var(--c5);} .c6 .caso-bar-fill{background:var(--c6);} .c7 .caso-bar-fill{background:var(--c7);}
+
+  /* ── DATOS REVISIÓN ── */
+  .datos-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);padding:20px;margin-bottom:20px;box-shadow:var(--sombra);}
+  .datos-card h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--azul-med);margin-bottom:14px;border-bottom:1px solid var(--borde);padding-bottom:8px;}
+  .datos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .form-field label{display:block;font-size:11px;font-weight:600;color:var(--texto-sec);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+  .form-field input,.form-field textarea{width:100%;padding:8px 12px;border:1.5px solid var(--borde);border-radius:6px;font-size:13px;background:var(--amarillo-bg);transition:border .15s;font-family:inherit;}
+  .form-field input:focus,.form-field textarea:focus{outline:none;border-color:var(--azul-med);background:white;}
+  .form-field textarea{resize:vertical;min-height:38px;}
+
+  /* ── DISABLED OVERLAY ── */
+  .eval-bloqueado{pointer-events:none;opacity:.45;user-select:none;}
+
+  /* ── CRITERIOS ── */
+  .caso-section{margin-bottom:28px;}
+  .caso-header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:var(--radio) var(--radio) 0 0;color:white;}
+  .caso-header.c5{background:linear-gradient(90deg,#3d4f8a 0%,var(--c5) 100%);}
+  .caso-header.c6{background:linear-gradient(90deg,#1a5c35 0%,var(--c6) 100%);}
+  .caso-header.c7{background:linear-gradient(90deg,#6b3200 0%,var(--c7) 100%);}
+  .caso-header-icon{font-size:24px;}
+  .caso-header-info h2{font-size:16px;font-weight:700;}
+  .caso-header-info p{font-size:12px;opacity:.85;margin-top:2px;}
+  .caso-header-score{margin-left:auto;text-align:right;}
+  .chs-pts{font-size:20px;font-weight:800;}
+  .chs-lbl{font-size:11px;opacity:.8;}
+
+  .criterio-card{background:white;border:1px solid var(--borde);margin-bottom:10px;box-shadow:var(--sombra);overflow:hidden;}
+  .criterio-card:last-child{border-radius:0 0 var(--radio) var(--radio);}
+  .criterio-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;transition:background .12s;user-select:none;}
+  .criterio-head:hover{background:var(--azul-bg);}
+  .criterio-head.has-value{border-left:4px solid var(--azul-med);}
+  .ch-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+  .num-badge{width:28px;height:28px;border-radius:50%;background:var(--azul-bg);color:var(--azul-med);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .criterio-nombre{font-size:14px;font-weight:600;color:var(--texto);}
+  .criterio-desc{font-size:12px;color:var(--texto-sec);margin-top:2px;}
+  .ch-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+  .pts-pill{background:var(--azul-bg);color:var(--azul-osc);font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;min-width:68px;text-align:center;}
+  .pts-pill.filled{background:var(--azul-med);color:white;}
+  .chevron-icon{font-size:14px;color:var(--texto-sec);transition:transform .25s;}
+  .criterio-card.open .chevron-icon{transform:rotate(180deg);}
+  .criterio-body{display:none;border-top:1px solid var(--borde);}
+  .criterio-card.open .criterio-body{display:block;}
+  .ind-progress{height:3px;background:var(--gris);}
+  .ind-progress-fill{height:100%;background:var(--azul-med);transition:width .3s;}
+  .ind-grid{display:grid;grid-template-columns:repeat(5,1fr);}
+  .ind-col{border-right:1px solid var(--borde);}
+  .ind-col:last-child{border-right:none;}
+  .ind-head{padding:10px 12px;background:var(--gris);border-bottom:1px solid var(--borde);}
+  .ind-head-label{font-size:11px;font-weight:700;color:var(--azul-osc);}
+  .ind-head-pts{font-size:10px;color:var(--texto-sec);margin-top:1px;}
+  .ind-body{padding:12px;}
+  .ind-desc{font-size:11px;color:var(--texto-sec);line-height:1.5;min-height:72px;margin-bottom:10px;}
+  .ind-select-btn{width:100%;padding:7px;border:1.5px solid var(--borde);border-radius:6px;background:white;font-size:11px;font-weight:600;color:var(--texto-sec);cursor:pointer;transition:all .15s;text-align:center;}
+  .ind-select-btn:hover{border-color:var(--azul-med);color:var(--azul-med);background:var(--azul-bg);}
+  .ind-col.selected .ind-head{background:var(--azul-bg);}
+  .ind-col.selected .ind-select-btn{background:var(--azul-med);color:white;border-color:var(--azul-med);}
+  .ind-col.selected .ind-desc{color:var(--texto);font-weight:500;}
+
+  /* ── FEEDBACK ── */
+  .feedback-row{padding:12px 16px;background:var(--amarillo-bg);border-top:1px solid var(--borde);display:flex;align-items:flex-start;gap:10px;}
+  .feedback-row label{font-size:11px;font-weight:700;color:var(--naranja);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;padding-top:9px;}
+  .feedback-row textarea{flex:1;padding:8px 12px;border:1.5px solid var(--gris-med);border-radius:6px;font-size:12px;font-family:inherit;background:white;resize:vertical;min-height:38px;transition:border .15s;}
+  .feedback-row textarea:focus{outline:none;border-color:var(--naranja);}
+
+  /* ── RESUMEN ── */
+  .resumen-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-top:24px;box-shadow:var(--sombra);overflow:hidden;}
+  .resumen-card h3{padding:14px 18px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--azul-med);border-bottom:1px solid var(--borde);}
+  .resumen-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .resumen-table th{padding:10px 14px;text-align:left;background:var(--gris);font-weight:700;color:var(--texto-sec);font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+  .resumen-table td{padding:9px 14px;border-top:1px solid var(--borde);color:var(--texto);}
+  .resumen-table tr:hover td{background:var(--azul-bg);}
+  .chip{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;}
+  .chip.ok{background:var(--verde-bg);color:var(--verde);}
+  .chip.fail{background:var(--rojo-bg);color:var(--rojo);}
+  .chip.pend{background:var(--gris);color:var(--texto-sec);}
+  .caso-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-right:4px;}
+  .caso-tag.c5{background:var(--c5-bg);color:var(--c5);}
+  .caso-tag.c6{background:var(--c6-bg);color:var(--c6);}
+  .caso-tag.c7{background:var(--c7-bg);color:var(--c7);}
+
+  /* ── HISTORIAL ── */
+  .historial-section{margin-top:28px;}
+  .historial-section .hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .historial-section h2{font-size:15px;font-weight:700;color:var(--azul-osc);display:flex;align-items:center;gap:8px;}
+  .hist-count-badge{background:var(--azul-bg);color:var(--azul-med);font-size:12px;padding:2px 10px;border-radius:99px;font-weight:700;}
+  .historial-empty{background:white;border:1px dashed var(--borde);border-radius:var(--radio);padding:32px;text-align:center;color:var(--texto-sec);font-size:13px;}
+  .hist-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:10px;box-shadow:var(--sombra);overflow:hidden;}
+  .hist-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;gap:14px;flex-wrap:wrap;}
+  .hist-info{flex:1;min-width:160px;}
+  .hist-nombre{font-size:14px;font-weight:700;color:var(--texto);}
+  .hist-meta{font-size:11px;color:var(--texto-sec);margin-top:2px;}
+  .hist-scores{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .hist-nota{font-size:22px;font-weight:800;min-width:48px;text-align:center;}
+  .hist-nota.ok{color:var(--verde);}
+  .hist-nota.fail{color:var(--rojo);}
+  .hist-actions{display:flex;gap:8px;}
+  .btn-sm{padding:5px 12px;font-size:12px;border-radius:5px;border:1px solid var(--borde);background:white;cursor:pointer;font-weight:600;color:var(--texto-sec);}
+  .btn-sm:hover{background:var(--gris);}
+  .btn-sm.danger{color:var(--rojo);border-color:var(--rojo-bg);}
+  .btn-sm.danger:hover{background:var(--rojo-bg);}
+  .hist-detail{display:none;border-top:1px solid var(--borde);padding:14px 18px;background:#fafbfc;}
+  .hist-detail.open{display:block;}
+  .hist-det-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+  .hist-det-caso{border-radius:6px;padding:10px 14px;}
+  .hist-det-caso.c5{background:var(--c5-bg);border:1px solid var(--c5);}
+  .hist-det-caso.c6{background:var(--c6-bg);border:1px solid var(--c6);}
+  .hist-det-caso.c7{background:var(--c7-bg);border:1px solid var(--c7);}
+  .hdc-lbl{font-size:11px;font-weight:700;}
+  .hist-det-caso.c5 .hdc-lbl{color:var(--c5);}
+  .hist-det-caso.c6 .hdc-lbl{color:var(--c6);}
+  .hist-det-caso.c7 .hdc-lbl{color:var(--c7);}
+  .hdc-val{font-size:18px;font-weight:800;}
+  .hist-crit-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .hist-crit-table th{padding:6px 10px;background:var(--gris);font-weight:700;color:var(--texto-sec);border:1px solid var(--borde);}
+  .hist-crit-table td{padding:6px 10px;border:1px solid var(--borde);color:var(--texto);}
+  .hist-fb{font-size:11px;color:var(--naranja);font-style:italic;}
+
+  /* ── MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.hidden{display:none;}
+  .modal-box{background:white;border-radius:12px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;}
+  .modal-head{background:linear-gradient(135deg,var(--azul-osc),var(--azul-med));color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-head h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;line-height:1;padding:0 4px;}
+  .modal-close:hover{color:white;}
+  .modal-body{padding:24px;display:flex;flex-direction:column;gap:16px;}
+  .modal-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--texto-sec);margin-bottom:5px;}
+  .modal-field input,.modal-field textarea,.modal-field select{width:100%;padding:9px 12px;border:1.5px solid var(--borde);border-radius:6px;font-size:13px;font-family:inherit;background:var(--amarillo-bg);transition:border .15s;}
+  .modal-field input:focus,.modal-field textarea:focus,.modal-field select:focus{outline:none;border-color:var(--azul-med);background:white;}
+  .modal-field textarea{resize:vertical;min-height:64px;}
+  .color-picker{display:flex;gap:8px;flex-wrap:wrap;}
+  .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;}
+  .color-dot:hover{transform:scale(1.15);}
+  .color-dot.sel{border-color:var(--texto);box-shadow:0 0 0 2px white inset;}
+  .modal-footer{padding:16px 24px;border-top:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .modal-footer-right{display:flex;gap:8px;}
+  .btn-modal-save{padding:9px 20px;background:var(--azul-med);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-modal-save:hover{background:var(--azul-osc);}
+  .btn-modal-cancel{padding:9px 16px;background:white;color:var(--texto-sec);border:1px solid var(--borde);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-modal-cancel:hover{background:var(--gris);}
+  .btn-modal-del{padding:9px 16px;background:white;color:var(--rojo);border:1px solid var(--rojo-bg);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-modal-del:hover{background:var(--rojo-bg);}
+
+  /* ── TOAST ── */
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--azul-osc);color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;z-index:9999;}
+  #toast.show{opacity:1;transform:translateY(0);}
+
+  @media(max-width:900px){
+    .score-grid{grid-template-columns:1fr 1fr;}
+    .caso-scores{grid-template-columns:1fr;}
+    .datos-grid{grid-template-columns:1fr 1fr;}
+    .hist-det-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:600px){
+    .ind-grid{grid-template-columns:1fr 1fr;}
+    .header{padding:20px;}
+    .main{padding:14px;}
+    .datos-grid{grid-template-columns:1fr;}
+    .grupos-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:420px){
+    .ind-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>🌐 Rúbrica — EA2 Actividades 2.1 · 2.2 · 2.3 <span class="badge-f">Formativa</span></h1>
+  <p>DRY7122 — Diseño de Arquitectura de Red · Casos de Estudio 5, 6 y 7</p>
+  <div class="header-actions">
+    <button class="btn btn-white"   onclick="guardarRevision()">💾 Guardar revisión</button>
+    <button class="btn btn-outline" onclick="nuevaRevision()">📋 Nueva evaluación</button>
+    <button class="btn btn-outline" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    <button class="btn btn-outline" onclick="saveToFile()">📁 Guardar archivo</button>
+    <button class="btn btn-danger"  onclick="borrarHistorialGrupo()">🗑 Borrar historial grupo</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PANEL DE GRUPOS -->
+  <div class="grupos-panel">
+    <div class="grupos-panel-head">
+      <h3>👥 Grupos</h3>
+      <button class="btn btn-green" onclick="abrirModalGrupo(null)">+ Nuevo grupo</button>
+    </div>
+    <div id="gruposGrid"></div>
+  </div>
+
+  <!-- BANNER SIN GRUPO (visible cuando no hay grupo seleccionado) -->
+  <div class="no-grupo-banner" id="noGrupoBanner">
+    <div class="ngb-icon">👆</div>
+    <h3>Selecciona un grupo para comenzar</h3>
+    <p>Haz clic en un grupo de la lista o crea uno nuevo para habilitar la evaluación.</p>
+  </div>
+
+  <!-- WRAPPER EVALUACIÓN (se bloquea si no hay grupo activo) -->
+  <div id="evalWrapper">
+
+    <!-- BANNER GRUPO ACTIVO -->
+    <div class="grupo-activo-banner" id="grupoActivoBanner" style="display:none">
+      <div class="gab-color" id="gabColor"></div>
+      <div class="gab-info">
+        <div class="gab-nombre" id="gabNombre">—</div>
+        <div class="gab-integr" id="gabIntegr">—</div>
+        <div class="gab-seccion" id="gabSeccion"></div>
+      </div>
+      <span class="gab-revcount" id="gabRevCount">0 revisiones</span>
+    </div>
+
+    <!-- SCORE PANEL -->
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="lbl">Puntaje obtenido</div>
+        <div class="val" id="ptsTot">0 / 100</div>
+        <div class="progress-global"><div class="progress-global-fill" id="globalBar" style="width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="lbl">Porcentaje logrado</div>
+        <div class="val" id="pctTot">0%</div>
+        <div class="sub">Umbral aprobación: 60%</div>
+      </div>
+      <div class="score-card">
+        <div class="lbl">Nota final (1.0 – 7.0)</div>
+        <div class="val" id="notaTot">—</div>
+        <div class="sub" id="estadoSub">Sin calificar</div>
+      </div>
+      <div class="score-card">
+        <div class="lbl">Criterios evaluados</div>
+        <div class="val" id="critCount">0 / 10</div>
+        <div class="sub">Criterios completados</div>
+      </div>
+    </div>
+
+    <!-- SCORES POR CASO -->
+    <div class="caso-scores">
+      <div class="caso-score-card c5">
+        <div class="cs-lbl">📡 Caso 5 — Direccionamiento IP</div>
+        <div class="cs-val" id="c5pts">0 / 30</div>
+        <div class="cs-sub">Actividad 2.1 · 3 criterios</div>
+        <div class="caso-bar"><div class="caso-bar-fill" id="c5bar" style="width:0%"></div></div>
+      </div>
+      <div class="caso-score-card c6">
+        <div class="cs-lbl">🔀 Caso 6 — Enrutamiento</div>
+        <div class="cs-val" id="c6pts">0 / 40</div>
+        <div class="cs-sub">Actividad 2.2 · 4 criterios</div>
+        <div class="caso-bar"><div class="caso-bar-fill" id="c6bar" style="width:0%"></div></div>
+      </div>
+      <div class="caso-score-card c7">
+        <div class="cs-lbl">📞 Caso 7 — VoIP</div>
+        <div class="cs-val" id="c7pts">0 / 30</div>
+        <div class="cs-sub">Actividad 2.3 · 3 criterios</div>
+        <div class="caso-bar"><div class="caso-bar-fill" id="c7bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- DATOS REVISIÓN -->
+    <div class="datos-card">
+      <h3>📝 Datos de la revisión</h3>
+      <div class="datos-grid">
+        <div class="form-field">
+          <label>Docente evaluador</label>
+          <input type="text" id="fDocente" placeholder="Nombre del profesor">
+        </div>
+        <div class="form-field">
+          <label>Fecha de evaluación</label>
+          <input type="date" id="fFecha">
+        </div>
+        <div class="form-field">
+          <label>Observaciones</label>
+          <input type="text" id="fObs" placeholder="Notas adicionales...">
+        </div>
+      </div>
+    </div>
+
+    <!-- CRITERIOS -->
+    <div id="criteriosContainer"></div>
+
+    <!-- RESUMEN -->
+    <div class="resumen-card">
+      <h3>📊 Resumen por criterio</h3>
+      <table class="resumen-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Criterio</th>
+            <th style="width:90px">Caso</th>
+            <th style="width:120px">Indicador</th>
+            <th style="width:70px">Pts</th>
+            <th style="width:90px">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody"></tbody>
+      </table>
+    </div>
+
+    <!-- HISTORIAL DEL GRUPO -->
+    <div class="historial-section">
+      <div class="hist-header">
+        <h2>🗂 Historial del grupo <span class="hist-count-badge" id="histCount">0</span></h2>
+      </div>
+      <div id="historialContainer"></div>
+    </div>
+
+  </div><!-- /evalWrapper -->
+</div><!-- /main -->
+
+<!-- MODAL GRUPO -->
+<div class="modal-overlay hidden" id="modalGrupo">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitulo">Nuevo grupo</h3>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Nombre del grupo *</label>
+        <input type="text" id="mNombre" placeholder="Ej: Grupo 3">
+      </div>
+      <div class="modal-field">
+        <label>Integrantes</label>
+        <textarea id="mIntegrantes" placeholder="Ej: Ana García, Luis Pérez, María López..." rows="3"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Sección / Asignatura</label>
+        <input type="text" id="mSeccion" placeholder="Ej: DRY7122 — Sección 2">
+      </div>
+      <div class="modal-field">
+        <label>Color identificador</label>
+        <div class="color-picker" id="colorPicker"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div>
+        <button class="btn-modal-del" id="btnEliminarGrupo" onclick="eliminarGrupoModal()" style="display:none">🗑 Eliminar grupo</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn-modal-cancel" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-modal-save"   onclick="guardarGrupoModal()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script id="revision-data" type="application/json">{"grupos":[],"historiales":{}}</script>
+
+<script>
+/* ════════════════════════════════════════
+   CRITERIOS
+════════════════════════════════════════ */
+const CRITERIOS = [
+  { id:0, caso:5, nombre:"Esquema de direccionamiento IPv4",
+    desc:"Diseño VLSM, tabla de subredes, gateways y rangos de hosts por sede",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No propone esquema IPv4 ni segmentación. Sin tabla de subredes."},
+      {label:"Básico",      pts:4, desc:"Propone subredes pero sin VLSM. Tamaños no justificados."},
+      {label:"Aceptable",   pts:6, desc:"Diseña subredes con VLSM básico para sede principal. Tabla parcial."},
+      {label:"Bueno",       pts:8, desc:"Aplica VLSM para todas las sedes. Tabla con GW, broadcast y rango de hosts."},
+      {label:"Excelente",   pts:10,desc:"Esquema VLSM jerárquico completo, tabla detallada y justificación de tamaños."}
+    ]},
+  { id:1, caso:5, nombre:"Implementación IPv6 y mecanismos de transición",
+    desc:"Plan de subredes IPv6, prefijos /64, dual-stack o NAT64/PAT64",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No incluye IPv6. Sin mención de transición."},
+      {label:"Básico",      pts:4, desc:"Menciona IPv6 sin plan de subredes ni mecanismo de transición."},
+      {label:"Aceptable",   pts:6, desc:"Propone prefijos IPv6 por sede con mecanismo indicado (dual-stack o NAT64)."},
+      {label:"Bueno",       pts:8, desc:"Plan IPv6 completo con prefijos /64 por VLAN. Mecanismo dual-stack o NAT64 configurado."},
+      {label:"Excelente",   pts:10,desc:"Plan IPv6 exhaustivo, prefijos /64 por VLAN, transición justificada y tabla comparativa IPv4/IPv6."}
+    ]},
+  { id:2, caso:5, nombre:"Configuración DHCP",
+    desc:"Pools por VLAN/subred, exclusiones, opciones DNS/dominio, relay inter-VLAN",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No configura DHCP. Solo asignación estática sin documentación."},
+      {label:"Básico",      pts:4, desc:"Menciona DHCP pero sin pools, exclusiones ni opciones definidas."},
+      {label:"Aceptable",   pts:6, desc:"Define pools DHCP por subred con rango, GW y DNS básicos."},
+      {label:"Bueno",       pts:8, desc:"Configura DHCP con exclusiones, opciones (DNS, dominio) y helper-address inter-VLAN."},
+      {label:"Excelente",   pts:10,desc:"DHCP completo: pools por VLAN, exclusiones, opciones avanzadas, relay documentado."}
+    ]},
+  { id:3, caso:6, nombre:"Enrutamiento inter-VLAN mediante SVI",
+    desc:"SVIs en switch L3, trunks configurados y comunicación verificada entre VLANs",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No configura SVI ni inter-VLAN routing."},
+      {label:"Básico",      pts:4, desc:"Crea SVIs sin asignación correcta de IPs o sin trunks."},
+      {label:"Aceptable",   pts:6, desc:"Configura SVIs con IPs correctas en switch L3. VLANs operativas básicas."},
+      {label:"Bueno",       pts:8, desc:"Inter-VLAN correcto: SVIs, trunks configurados y comunicación verificada."},
+      {label:"Excelente",   pts:10,desc:"SVI completo con documentación de VLANs, trunks, access ports y diagrama lógico."}
+    ]},
+  { id:4, caso:6, nombre:"Protocolo IGP y diagrama de topología",
+    desc:"OSPF área 0 o EIGRP AS, redes anunciadas, autenticación MD5, diagrama de adyacencias",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No implementa IGP. Sin diagrama de topología."},
+      {label:"Básico",      pts:4, desc:"Menciona OSPF o EIGRP sin configuración completa."},
+      {label:"Aceptable",   pts:6, desc:"Configura IGP con redes anunciadas básicas."},
+      {label:"Bueno",       pts:8, desc:"IGP completo con todas las redes, autenticación MD5 y diagrama de adyacencias."},
+      {label:"Excelente",   pts:10,desc:"IGP optimizado: passive interfaces, autenticación, diagrama y verificación de tablas de routing."}
+    ]},
+  { id:5, caso:6, nombre:"Sumarización de rutas",
+    desc:"Cálculo correcto de prefijos resumen, reducción de tabla de routing",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No aplica sumarización. Rutas específicas no consolidadas."},
+      {label:"Básico",      pts:4, desc:"Menciona sumarización pero calcula incorrectamente el prefijo resumen."},
+      {label:"Aceptable",   pts:6, desc:"Calcula prefijo resumen correctamente para al menos un bloque de subredes."},
+      {label:"Bueno",       pts:8, desc:"Aplica sumarización en múltiples puntos con prefijos correctos."},
+      {label:"Excelente",   pts:10,desc:"Sumarización jerárquica completa, tabla antes/después documentada y justificación técnica."}
+    ]},
+  { id:6, caso:6, nombre:"Configuración BGP y números de AS",
+    desc:"eBGP con ISP, AS numbers, rutas anunciadas, atributos y políticas",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No configura BGP ni identifica AS del ISP."},
+      {label:"Básico",      pts:4, desc:"Menciona BGP pero sin neighbor correcto ni AS numbers definidos."},
+      {label:"Aceptable",   pts:6, desc:"Configura eBGP con neighbor ISP, AS propio y rutas básicas anunciadas."},
+      {label:"Bueno",       pts:8, desc:"BGP completo con prefijos anunciados, atributos y verificación de sesión."},
+      {label:"Excelente",   pts:10,desc:"eBGP + iBGP configurados, políticas de routing, prefix-lists y documentación de topología AS."}
+    ]},
+  { id:7, caso:7, nombre:"Diseño VoIP y equipamiento (BE7000/BE4000)",
+    desc:"Selección justificada de plataforma, cantidad de teléfonos, Cisco Unified CM",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No identifica equipos VoIP ni propone solución BE."},
+      {label:"Básico",      pts:4, desc:"Menciona BE7000/BE4000 sin criterio de selección ni capacidad."},
+      {label:"Aceptable",   pts:6, desc:"Selecciona BE7000 o BE4000 según tamaño de sede con justificación básica."},
+      {label:"Bueno",       pts:8, desc:"Diseño VoIP completo: equipos por sede, cantidad de teléfonos y plataforma."},
+      {label:"Excelente",   pts:10,desc:"Arquitectura VoIP detallada: BE7000/BE4000, CUCM, dispositivos, licencias y justificación técnica."}
+    ]},
+  { id:8, caso:7, nombre:"Telepresencia y QoS",
+    desc:"Equipos CTS, política QoS end-to-end, DSCP, colas LLQ/WFQ",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No incluye telepresencia ni QoS."},
+      {label:"Básico",      pts:4, desc:"Menciona QoS y telepresencia sin políticas ni equipos específicos."},
+      {label:"Aceptable",   pts:6, desc:"Propone equipos CTS y política QoS básica con clasificación de tráfico."},
+      {label:"Bueno",       pts:8, desc:"QoS con DSCP, colas LLQ para voz y equipos CTS en diagrama."},
+      {label:"Excelente",   pts:10,desc:"QoS end-to-end: DSCP/CoS, LLQ para voz, WFQ para video, SLA documentado."}
+    ]},
+  { id:9, caso:7, nombre:"Tabla de plan de marcación (Dial Plan)",
+    desc:"Extensiones por sede, prefijos de sitio, digit manipulation, llamadas externas",
+    indicadores:[
+      {label:"Insuficiente",pts:1, desc:"No presenta plan de marcación ni extensiones."},
+      {label:"Básico",      pts:4, desc:"Lista extensiones sin prefijos de sitio ni patrones de discado."},
+      {label:"Aceptable",   pts:6, desc:"Define extensiones por sede con prefijos y llamadas internas documentadas."},
+      {label:"Bueno",       pts:8, desc:"Tabla completa con extensiones, patrones de traducción y reglas para llamadas externas."},
+      {label:"Excelente",   pts:10,desc:"Dial plan exhaustivo: extensiones, prefijos, digit manipulation, rutas de emergencia y patrones documentados."}
+    ]}
+];
+
+const CASO_INFO = {
+  5:{label:"Caso 5",titulo:"Direccionamiento IP (IPv4/IPv6 + DHCP)",icon:"📡",clase:"c5",max:30},
+  6:{label:"Caso 6",titulo:"Enrutamiento (SVI · IGP · Sumarización · BGP)",icon:"🔀",clase:"c6",max:40},
+  7:{label:"Caso 7",titulo:"VoIP (BE7000/BE4000 · Telepresencia · Dial Plan)",icon:"📞",clase:"c7",max:30}
+};
+
+const N = CRITERIOS.length;
+const GRUPO_COLORS = ['#2E75B6','#2A7A4B','#9B4A00','#7B2D8B','#C62828','#1565C0','#00695C','#E65100','#4A148C','#1B5E20'];
+const GRUPOS_KEY   = "rubf567_grupos";
+const getHistKey   = gid => `rubf567_hist_${gid}`;
+
+/* ── STATE ── */
+let grupos       = [];
+let grupoActivo  = null;   // objeto grupo o null
+let editGrupoId  = null;   // id del grupo que se está editando en el modal
+let colorSel     = GRUPO_COLORS[0];
+
+let selected     = new Array(N).fill(-1);
+let feedbacks    = new Array(N).fill("");
+
+/* ════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════ */
+function loadEmbedded() {
+  try { return JSON.parse(document.getElementById("revision-data").textContent || '{"grupos":[],"historiales":{}}'); }
+  catch(e) { return {grupos:[],historiales:{}}; }
+}
+
+function loadGrupos() {
+  const local    = JSON.parse(localStorage.getItem(GRUPOS_KEY) || "[]");
+  const embedded = loadEmbedded().grupos || [];
+  if (!local.length && embedded.length) {
+    localStorage.setItem(GRUPOS_KEY, JSON.stringify(embedded));
+    return embedded;
+  }
+  if (embedded.length && local.length) {
+    const ids = new Set(local.map(g => g.id));
+    return [...local, ...embedded.filter(g => !ids.has(g.id))];
+  }
+  return local;
+}
+
+function saveGruposLS() { localStorage.setItem(GRUPOS_KEY, JSON.stringify(grupos)); }
+
+function loadHistGrupo(gid) {
+  const local    = JSON.parse(localStorage.getItem(getHistKey(gid)) || "[]");
+  const embedded = (loadEmbedded().historiales || {})[gid] || [];
+  if (!local.length && embedded.length) {
+    localStorage.setItem(getHistKey(gid), JSON.stringify(embedded));
+    return embedded;
+  }
+  if (embedded.length && local.length) {
+    const ids    = new Set(local.map(r => r.id));
+    const merged = [...local, ...embedded.filter(r => !ids.has(r.id))];
+    merged.sort((a,b) => b.id - a.id);
+    return merged;
+  }
+  return local;
+}
+
+function saveHistGrupo(gid, arr) {
+  arr.sort((a,b) => b.id - a.id);
+  localStorage.setItem(getHistKey(gid), JSON.stringify(arr));
+}
+
+/* ════════════════════════════════════════
+   GRUPOS UI
+════════════════════════════════════════ */
+function renderGrupos() {
+  const grid = document.getElementById("gruposGrid");
+  if (!grupos.length) {
+    grid.innerHTML = `<div class="grupos-empty">No hay grupos creados aún. Haz clic en <b>+ Nuevo grupo</b> para comenzar.</div>`;
+    return;
+  }
+  grid.innerHTML = grupos.map(g => {
+    const hist     = loadHistGrupo(g.id);
+    const isActivo = grupoActivo && grupoActivo.id === g.id;
+    return `
+      <div class="grupo-card-item ${isActivo ? 'activo' : ''}" onclick="seleccionarGrupo('${g.id}')">
+        ${isActivo ? '<span class="gc-activo-badge">▶ Activo</span>' : ''}
+        <div class="gc-color-bar" style="background:${g.color}"></div>
+        <div class="gc-nombre">${escHtml(g.nombre)}</div>
+        ${g.integrantes ? `<div class="gc-integr">${escHtml(g.integrantes)}</div>` : ''}
+        ${g.seccion     ? `<div class="gc-seccion">📚 ${escHtml(g.seccion)}</div>` : ''}
+        <div class="gc-revs">🗂 ${hist.length} revisión${hist.length !== 1 ? 'es' : ''}</div>
+        <div class="gc-actions" onclick="event.stopPropagation()">
+          <button class="gc-btn" onclick="abrirModalGrupo('${g.id}')">✏ Editar</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function seleccionarGrupo(gid) {
+  const g = grupos.find(x => x.id === gid);
+  if (!g) return;
+
+  // Si hay evaluación en curso, preguntar
+  const hayCambios = selected.some(s => s >= 0) || feedbacks.some(f => f.trim());
+  if (grupoActivo && grupoActivo.id !== gid && hayCambios) {
+    if (!confirm(`¿Cambiar al grupo "${g.nombre}"? Los cambios no guardados de la evaluación actual se perderán.`)) return;
+  }
+
+  grupoActivo = g;
+  resetEval();
+  renderGrupos();
+  actualizarBannerGrupo();
+  setEvalEnabled(true);
+  renderCriterios();
+  updateScores();
+  updateTabla();
+  renderHistorial();
+  toast(`✅ Grupo "${g.nombre}" seleccionado`);
+}
+
+function actualizarBannerGrupo() {
+  const banner = document.getElementById("grupoActivoBanner");
+  const noGrup = document.getElementById("noGrupoBanner");
+  if (!grupoActivo) {
+    banner.style.display = "none";
+    noGrup.style.display = "";
+    return;
+  }
+  noGrup.style.display = "none";
+  banner.style.display = "";
+  document.getElementById("gabColor").style.background = grupoActivo.color;
+  document.getElementById("gabNombre").textContent      = grupoActivo.nombre;
+  document.getElementById("gabIntegr").textContent      = grupoActivo.integrantes || "Sin integrantes registrados";
+  document.getElementById("gabSeccion").textContent     = grupoActivo.seccion || "";
+  const hist = loadHistGrupo(grupoActivo.id);
+  document.getElementById("gabRevCount").textContent    = `${hist.length} revisión${hist.length!==1?'es':''}`;
+}
+
+function setEvalEnabled(enabled) {
+  const wrapper = document.getElementById("evalWrapper");
+  if (enabled) {
+    wrapper.classList.remove("eval-bloqueado");
+    document.getElementById("noGrupoBanner").style.display = "none";
+  } else {
+    wrapper.classList.add("eval-bloqueado");
+  }
+}
+
+/* ════════════════════════════════════════
+   MODAL GRUPO
+════════════════════════════════════════ */
+function abrirModalGrupo(gid) {
+  editGrupoId = gid || null;
+  const g = gid ? grupos.find(x => x.id === gid) : null;
+  document.getElementById("modalTitulo").textContent = g ? "Editar grupo" : "Nuevo grupo";
+  document.getElementById("mNombre").value      = g ? g.nombre      : "";
+  document.getElementById("mIntegrantes").value = g ? (g.integrantes || "") : "";
+  document.getElementById("mSeccion").value     = g ? (g.seccion    || "") : "";
+  colorSel = g ? g.color : GRUPO_COLORS[grupos.length % GRUPO_COLORS.length];
+  renderColorPicker();
+  document.getElementById("btnEliminarGrupo").style.display = g ? "" : "none";
+  document.getElementById("modalGrupo").classList.remove("hidden");
+  setTimeout(() => document.getElementById("mNombre").focus(), 50);
+}
+
+function cerrarModal() {
+  document.getElementById("modalGrupo").classList.add("hidden");
+  editGrupoId = null;
+}
+
+function renderColorPicker() {
+  document.getElementById("colorPicker").innerHTML = GRUPO_COLORS.map(c =>
+    `<div class="color-dot ${c===colorSel?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`
+  ).join('');
+}
+
+function selColor(c) { colorSel = c; renderColorPicker(); }
+
+function guardarGrupoModal() {
+  const nombre = document.getElementById("mNombre").value.trim();
+  if (!nombre) { toast("⚠ Ingresa el nombre del grupo"); return; }
+  if (editGrupoId) {
+    const idx = grupos.findIndex(g => g.id === editGrupoId);
+    if (idx >= 0) {
+      grupos[idx].nombre      = nombre;
+      grupos[idx].integrantes = document.getElementById("mIntegrantes").value.trim();
+      grupos[idx].seccion     = document.getElementById("mSeccion").value.trim();
+      grupos[idx].color       = colorSel;
+      if (grupoActivo && grupoActivo.id === editGrupoId) { grupoActivo = grupos[idx]; actualizarBannerGrupo(); }
+      toast(`✏ Grupo "${nombre}" actualizado`);
+    }
+  } else {
+    const g = {
+      id:          Date.now().toString(),
+      nombre,
+      integrantes: document.getElementById("mIntegrantes").value.trim(),
+      seccion:     document.getElementById("mSeccion").value.trim(),
+      color:       colorSel
+    };
+    grupos.push(g);
+    toast(`✅ Grupo "${nombre}" creado`);
+  }
+  saveGruposLS();
+  cerrarModal();
+  renderGrupos();
+}
+
+function eliminarGrupoModal() {
+  const g = grupos.find(x => x.id === editGrupoId);
+  if (!g) return;
+  const hist = loadHistGrupo(g.id);
+  const msg  = hist.length
+    ? `¿Eliminar el grupo "${g.nombre}" y sus ${hist.length} revisión${hist.length!==1?'es':''}? Esta acción es irreversible.`
+    : `¿Eliminar el grupo "${g.nombre}"?`;
+  if (!confirm(msg)) return;
+  localStorage.removeItem(getHistKey(g.id));
+  grupos = grupos.filter(x => x.id !== editGrupoId);
+  saveGruposLS();
+  if (grupoActivo && grupoActivo.id === editGrupoId) {
+    grupoActivo = null;
+    setEvalEnabled(false);
+    actualizarBannerGrupo();
+    resetEval();
+    renderCriterios();
+    updateScores();
+    updateTabla();
+    renderHistorial();
+  }
+  cerrarModal();
+  renderGrupos();
+  toast("🗑 Grupo eliminado");
+}
+
+/* ════════════════════════════════════════
+   EVAL — RESET Y RENDER
+════════════════════════════════════════ */
+function resetEval() {
+  selected  = new Array(N).fill(-1);
+  feedbacks = new Array(N).fill("");
+  document.getElementById("fDocente").value = "";
+  document.getElementById("fFecha").value   = new Date().toISOString().slice(0,10);
+  document.getElementById("fObs").value     = "";
+}
+
+function renderCriterios() {
+  const container = document.getElementById("criteriosContainer");
+  container.innerHTML = "";
+  [5,6,7].forEach(nCaso => {
+    const info  = CASO_INFO[nCaso];
+    const crits = CRITERIOS.filter(c => c.caso === nCaso);
+    const sec   = document.createElement("div");
+    sec.className = "caso-section";
+    sec.innerHTML = `
+      <div class="caso-header ${info.clase}">
+        <div class="caso-header-icon">${info.icon}</div>
+        <div class="caso-header-info">
+          <h2>${info.label} — ${info.titulo}</h2>
+          <p>Actividad ${nCaso===5?'2.1':nCaso===6?'2.2':'2.3'} · ${crits.length} criterios · Máximo ${info.max} puntos</p>
+        </div>
+        <div class="caso-header-score">
+          <div class="chs-pts" id="caso${nCaso}headpts">0 / ${info.max}</div>
+          <div class="chs-lbl">puntos</div>
+        </div>
+      </div>`;
+    crits.forEach(c => sec.appendChild(buildCriterioCard(c)));
+    container.appendChild(sec);
+  });
+}
+
+function buildCriterioCard(c) {
+  const div    = document.createElement("div");
+  const selIdx = selected[c.id];
+  const pts    = getPts(c.id);
+  const hasPts = selIdx >= 0;
+  div.className = "criterio-card" + (hasPts ? " open" : "");
+  div.id = `card-${c.id}`;
+  div.innerHTML = `
+    <div class="criterio-head ${hasPts?'has-value':''}" onclick="toggleCard(${c.id})">
+      <div class="ch-left">
+        <div class="num-badge">${c.id+1}</div>
+        <div>
+          <div class="criterio-nombre">${c.nombre}</div>
+          <div class="criterio-desc">${c.desc}</div>
+        </div>
+      </div>
+      <div class="ch-right">
+        <div class="pts-pill ${hasPts?'filled':''}" id="pill-${c.id}">${hasPts?pts+' / 10 pts':'— / 10 pts'}</div>
+        <span class="chevron-icon">▼</span>
+      </div>
+    </div>
+    <div class="criterio-body">
+      <div class="ind-progress"><div class="ind-progress-fill" id="prog-${c.id}" style="width:${hasPts?pts*10:0}%"></div></div>
+      <div class="ind-grid">
+        ${c.indicadores.map((ind,i) => `
+          <div class="ind-col ${selIdx===i?'selected':''}" id="col-${c.id}-${i}">
+            <div class="ind-head">
+              <div class="ind-head-label">${ind.label}</div>
+              <div class="ind-head-pts">${ind.pts} pts</div>
+            </div>
+            <div class="ind-body">
+              <div class="ind-desc">${ind.desc}</div>
+              <button class="ind-select-btn" onclick="selectInd(${c.id},${i})">
+                ${selIdx===i?'✓ Seleccionado':'Seleccionar'}
+              </button>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="feedback-row">
+        <label>💬 Retroalimentación</label>
+        <textarea id="fb-${c.id}" placeholder="Comentarios formativos, fortalezas y aspectos a mejorar..." rows="2" oninput="saveFeedback(${c.id})">${feedbacks[c.id]||''}</textarea>
+      </div>
+    </div>`;
+  return div;
+}
+
+function toggleCard(id) { document.getElementById(`card-${id}`).classList.toggle("open"); }
+
+function selectInd(critId, indIdx) {
+  if (!grupoActivo) return;
+  selected[critId] = indIdx;
+  refreshCard(critId);
+  updateScores();
+  updateTabla();
+}
+
+function saveFeedback(critId) {
+  feedbacks[critId] = document.getElementById(`fb-${critId}`).value;
+}
+
+function refreshCard(id) {
+  const c      = CRITERIOS[id];
+  const selIdx = selected[id];
+  const pts    = getPts(id);
+  const hasPts = selIdx >= 0;
+  const card   = document.getElementById(`card-${id}`);
+  const head   = card.querySelector(".criterio-head");
+  hasPts ? head.classList.add("has-value") : head.classList.remove("has-value");
+  const pill = document.getElementById(`pill-${id}`);
+  pill.textContent = hasPts ? `${pts} / 10 pts` : "— / 10 pts";
+  hasPts ? pill.classList.add("filled") : pill.classList.remove("filled");
+  document.getElementById(`prog-${id}`).style.width = hasPts ? `${pts*10}%` : "0%";
+  c.indicadores.forEach((_,i) => {
+    const col = document.getElementById(`col-${id}-${i}`);
+    const btn = col.querySelector(".ind-select-btn");
+    if (i === selIdx) { col.classList.add("selected");    btn.textContent = "✓ Seleccionado"; }
+    else              { col.classList.remove("selected"); btn.textContent = "Seleccionar"; }
+  });
+}
+
+/* ════════════════════════════════════════
+   SCORES
+════════════════════════════════════════ */
+function getPts(critId) {
+  const sel = selected[critId];
+  return sel < 0 ? 0 : CRITERIOS[critId].indicadores[sel].pts;
+}
+function getPtsCaso(n) { return CRITERIOS.filter(c=>c.caso===n).reduce((s,c)=>s+getPts(c.id),0); }
+function calcNota(pct) {
+  if (pct < 0.6) return Math.round((1 + (pct/0.6)*2.9)*10)/10;
+  return Math.round((4 + ((pct-0.6)/0.4)*3)*10)/10;
+}
+
+function updateScores() {
+  const total = CRITERIOS.reduce((s,c)=>s+getPts(c.id),0);
+  const pct   = total/100;
+  const nota  = calcNota(pct);
+  const count = selected.filter(x=>x>=0).length;
+  document.getElementById("ptsTot").textContent    = `${total} / 100`;
+  document.getElementById("pctTot").textContent    = `${Math.round(pct*100)}%`;
+  document.getElementById("globalBar").style.width = `${pct*100}%`;
+  document.getElementById("critCount").textContent = `${count} / ${N}`;
+  const notaEl = document.getElementById("notaTot");
+  const statEl = document.getElementById("estadoSub");
+  if (count > 0) {
+    notaEl.textContent = nota.toFixed(1);
+    notaEl.className   = "val " + (nota>=4?"aprobado":"reprobado");
+    statEl.textContent = nota>=4 ? "✓ Aprobado" : "✗ Reprobado";
+  } else {
+    notaEl.textContent = "—"; notaEl.className = "val"; statEl.textContent = "Sin calificar";
+  }
+  [5,6,7].forEach(n => {
+    const pts2 = getPtsCaso(n);
+    const mx   = CASO_INFO[n].max;
+    document.getElementById(`c${n}pts`).textContent  = `${pts2} / ${mx}`;
+    document.getElementById(`c${n}bar`).style.width  = `${(pts2/mx)*100}%`;
+    const hd = document.getElementById(`caso${n}headpts`);
+    if (hd) hd.textContent = `${pts2} / ${mx}`;
+  });
+}
+
+function updateTabla() {
+  const body = document.getElementById("tablaBody");
+  body.innerHTML = "";
+  CRITERIOS.forEach(c => {
+    const sel  = selected[c.id];
+    const pts  = getPts(c.id);
+    const info = CASO_INFO[c.caso];
+    const row  = document.createElement("tr");
+    let estado, ind;
+    if (sel < 0) {
+      estado = `<span class="chip pend">Pendiente</span>`;
+      ind    = `<span style="color:var(--texto-sec)">—</span>`;
+    } else {
+      const ok = pts >= 6;
+      estado = `<span class="chip ${ok?'ok':'fail'}">${ok?'Logrado':'En desarrollo'}</span>`;
+      ind    = c.indicadores[sel].label;
+    }
+    row.innerHTML = `
+      <td style="color:var(--texto-sec);font-weight:700">${c.id+1}</td>
+      <td><span class="caso-tag ${info.clase}">${info.label}</span>${c.nombre}</td>
+      <td>${ind}</td>
+      <td>${sel>=0?`<b>${pts}</b> / 10`:'— / 10'}</td>
+      <td>${estado}</td>`;
+    body.appendChild(row);
+  });
+}
+
+/* ════════════════════════════════════════
+   HISTORIAL POR GRUPO
+════════════════════════════════════════ */
+function guardarRevision() {
+  if (!grupoActivo) { toast("⚠ Selecciona un grupo primero"); return; }
+  const hist = loadHistGrupo(grupoActivo.id);
+  const rev  = {
+    id:        Date.now(),
+    docente:   document.getElementById("fDocente").value.trim(),
+    fecha:     document.getElementById("fFecha").value  || new Date().toISOString().slice(0,10),
+    obs:       document.getElementById("fObs").value.trim(),
+    selected:  [...selected],
+    feedbacks: [...feedbacks],
+    ptsTotal:  CRITERIOS.reduce((s,c)=>s+getPts(c.id),0),
+    ptsCaso:   {5:getPtsCaso(5), 6:getPtsCaso(6), 7:getPtsCaso(7)}
+  };
+  hist.unshift(rev);
+  saveHistGrupo(grupoActivo.id, hist);
+  actualizarBannerGrupo();
+  renderGrupos();
+  renderHistorial();
+  toast(`💾 Revisión guardada para "${grupoActivo.nombre}"`);
+}
+
+function nuevaRevision() {
+  if (!grupoActivo) { toast("⚠ Selecciona un grupo primero"); return; }
+  const hayCambios = selected.some(s=>s>=0) || feedbacks.some(f=>f.trim());
+  if (hayCambios && !confirm("¿Iniciar nueva evaluación? Los cambios no guardados se perderán.")) return;
+  resetEval();
+  renderCriterios();
+  updateScores();
+  updateTabla();
+  toast("📋 Nueva evaluación iniciada");
+}
+
+function cargarRevision(revId) {
+  if (!grupoActivo) return;
+  const hist = loadHistGrupo(grupoActivo.id);
+  const rev  = hist.find(r => r.id === revId);
+  if (!rev) return;
+  selected  = [...rev.selected];
+  feedbacks = [...(rev.feedbacks || new Array(N).fill(""))];
+  document.getElementById("fDocente").value = rev.docente || "";
+  document.getElementById("fFecha").value   = rev.fecha   || "";
+  document.getElementById("fObs").value     = rev.obs     || "";
+  renderCriterios();
+  updateScores();
+  updateTabla();
+  window.scrollTo({top:0,behavior:"smooth"});
+  toast("📂 Revisión cargada");
+}
+
+function eliminarRevision(revId) {
+  if (!grupoActivo) return;
+  if (!confirm("¿Eliminar esta revisión?")) return;
+  const hist = loadHistGrupo(grupoActivo.id).filter(r => r.id !== revId);
+  saveHistGrupo(grupoActivo.id, hist);
+  actualizarBannerGrupo();
+  renderGrupos();
+  renderHistorial();
+  toast("🗑 Revisión eliminada");
+}
+
+function borrarHistorialGrupo() {
+  if (!grupoActivo) { toast("⚠ Selecciona un grupo primero"); return; }
+  const hist = loadHistGrupo(grupoActivo.id);
+  if (!hist.length) { toast("ℹ Sin revisiones para borrar"); return; }
+  if (!confirm(`¿Borrar las ${hist.length} revisión${hist.length!==1?'es':''} del grupo "${grupoActivo.nombre}"?`)) return;
+  localStorage.removeItem(getHistKey(grupoActivo.id));
+  actualizarBannerGrupo();
+  renderGrupos();
+  renderHistorial();
+  toast("🗑 Historial del grupo borrado");
+}
+
+function toggleHistDetail(revId) {
+  document.getElementById(`hdet-${revId}`).classList.toggle("open");
+}
+
+function renderHistorial() {
+  const container = document.getElementById("historialContainer");
+  if (!grupoActivo) {
+    container.innerHTML = `<div class="historial-empty">Selecciona un grupo para ver su historial.</div>`;
+    document.getElementById("histCount").textContent = "0";
+    return;
+  }
+  const hist = loadHistGrupo(grupoActivo.id);
+  document.getElementById("histCount").textContent = hist.length;
+  if (!hist.length) {
+    container.innerHTML = `<div class="historial-empty">📭 Sin revisiones guardadas para este grupo.<br>Completa la evaluación y presiona <b>💾 Guardar revisión</b>.</div>`;
+    return;
+  }
+  const g = grupoActivo;
+  container.innerHTML = hist.map(rev => {
+    const pct  = rev.ptsTotal/100;
+    const nota = calcNota(pct).toFixed(1);
+    const ok   = parseFloat(nota) >= 4;
+    const pc   = rev.ptsCaso || {5:0,6:0,7:0};
+    return `
+      <div class="hist-card">
+        <div class="hist-card-head">
+          <div class="hist-info">
+            <div class="hist-nombre" style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:${g.color};display:inline-block;flex-shrink:0"></span>
+              ${escHtml(g.nombre)}
+            </div>
+            <div class="hist-meta">${rev.fecha}${rev.docente?' · '+escHtml(rev.docente):''}${rev.obs?' · '+escHtml(rev.obs):''}</div>
+          </div>
+          <div class="hist-scores">
+            <div style="text-align:center">
+              <div class="hist-nota ${ok?'ok':'fail'}">${nota}</div>
+              <div style="font-size:10px;color:var(--texto-sec)">${rev.ptsTotal}/100 pts</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="font-size:11px;background:var(--c5-bg);color:var(--c5);padding:2px 8px;border-radius:4px;font-weight:700">C5:${pc[5]}/30</span>
+              <span style="font-size:11px;background:var(--c6-bg);color:var(--c6);padding:2px 8px;border-radius:4px;font-weight:700">C6:${pc[6]}/40</span>
+              <span style="font-size:11px;background:var(--c7-bg);color:var(--c7);padding:2px 8px;border-radius:4px;font-weight:700">C7:${pc[7]}/30</span>
+            </div>
+          </div>
+          <div class="hist-actions">
+            <button class="btn-sm" onclick="toggleHistDetail(${rev.id})">🔍 Ver</button>
+            <button class="btn-sm" onclick="cargarRevision(${rev.id})">📂 Cargar</button>
+            <button class="btn-sm danger" onclick="eliminarRevision(${rev.id})">🗑</button>
+          </div>
+        </div>
+        <div class="hist-detail" id="hdet-${rev.id}">
+          <div class="hist-det-grid">
+            ${[5,6,7].map(n=>`
+              <div class="hist-det-caso c${n}">
+                <div class="hdc-lbl">${CASO_INFO[n].icon} ${CASO_INFO[n].label}</div>
+                <div class="hdc-val">${pc[n]} / ${CASO_INFO[n].max} pts</div>
+              </div>`).join('')}
+          </div>
+          <table class="hist-crit-table">
+            <thead><tr><th>#</th><th>Criterio</th><th>Indicador</th><th>Pts</th><th>Retroalimentación</th></tr></thead>
+            <tbody>
+              ${CRITERIOS.map(c=>{
+                const sel = (rev.selected||[])[c.id];
+                const fb  = (rev.feedbacks||[])[c.id]||"";
+                const ind = sel>=0 ? c.indicadores[sel].label : "—";
+                const pts = sel>=0 ? c.indicadores[sel].pts   : "—";
+                return `<tr>
+                  <td>${c.id+1}</td>
+                  <td>${escHtml(c.nombre)}</td>
+                  <td>${ind}</td>
+                  <td>${pts}</td>
+                  <td class="hist-fb">${escHtml(fb)||'—'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          ${rev.obs?`<div style="margin-top:10px;font-size:12px;color:var(--texto-sec)"><b>Obs:</b> ${escHtml(rev.obs)}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   CSV
+════════════════════════════════════════ */
+function exportarCSV() {
+  if (!grupoActivo) { toast("⚠ Selecciona un grupo primero"); return; }
+  const hist = loadHistGrupo(grupoActivo.id);
+  if (!hist.length) { toast("⚠ Sin revisiones para exportar"); return; }
+  const head = ["ID","Grupo","Fecha","Docente","Pts Total","Nota","Pts C5","Pts C6","Pts C7",
+    ...CRITERIOS.map(c=>`C${c.id+1} - ${c.nombre}`),
+    ...CRITERIOS.map(c=>`FB C${c.id+1}`)].join(";");
+  const rows = hist.map(rev => {
+    const nota = calcNota(rev.ptsTotal/100).toFixed(1);
+    const pc   = rev.ptsCaso||{5:0,6:0,7:0};
+    const crit = CRITERIOS.map(c=>{ const s=(rev.selected||[])[c.id]; return s>=0?c.indicadores[s].pts:""; });
+    const fbs  = CRITERIOS.map(c=>`"${((rev.feedbacks||[])[c.id]||"").replace(/"/g,'""')}"`);
+    return [rev.id,`"${grupoActivo.nombre}"`,rev.fecha,`"${rev.docente||''}"`,rev.ptsTotal,nota,pc[5],pc[6],pc[7],...crit,...fbs].join(";");
+  });
+  const blob = new Blob(["﻿"+[head,...rows].join("\n")],{type:"text/csv;charset=utf-8"});
+  const a    = document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download = `rubrica_formativa_${grupoActivo.nombre.replace(/\s+/g,'_')}.csv`; a.click();
+  toast("⬇ CSV exportado");
+}
+
+/* ════════════════════════════════════════
+   SAVE TO FILE
+════════════════════════════════════════ */
+function saveToFile() {
+  const historiales = {};
+  grupos.forEach(g => { historiales[g.id] = loadHistGrupo(g.id); });
+  const data  = JSON.stringify({grupos, historiales});
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector("#revision-data").textContent = data;
+  const html  = "<!DOCTYPE html>\n" + clone.outerHTML;
+  const blob  = new Blob([html],{type:"text/html;charset=utf-8"});
+  const a     = document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download  = "rubrica_formativa_casos567.html"; a.click();
+  toast("📁 Archivo guardado con todos los grupos e historiales");
+}
+
+/* ════════════════════════════════════════
+   UTILS
+════════════════════════════════════════ */
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"), 2800);
+}
+function escHtml(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+// Cerrar modal al hacer clic fuera
+document.getElementById("modalGrupo").addEventListener("click", e => {
+  if (e.target === e.currentTarget) cerrarModal();
+});
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+document.getElementById("fFecha").value = new Date().toISOString().slice(0,10);
+grupos = loadGrupos();
+renderGrupos();
+setEvalEnabled(false);
+actualizarBannerGrupo();
+renderCriterios();
+updateScores();
+updateTabla();
+renderHistorial();
+</script>
+</body>
+</html>

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rúbrica EA2 — DRY7112</title>
+<style>
+  :root {
+    --az-osc:#1F3864; --az-med:#2E75B6; --az-bg:#EBF3FA; --az-clr:#BDD7EE;
+    --verde:#375623;  --verde-bg:#E2EFDA;
+    --rojo:#9C0006;   --rojo-bg:#FCE4D6;
+    --naranja:#C55A11;--naranja-bg:#FFF3E0;
+    --gris:#F5F5F5;   --gris2:#D9D9D9;
+    --amarillo-bg:#FFF9E6;
+    --texto:#1a1a1a;  --texto-sec:#555; --borde:#d0d7de;
+    --radio:8px; --sombra:0 1px 3px rgba(0,0,0,.1);
+    --c5:#3D4F8A; --c5-bg:#EEF1FA;
+    --c6:#1A5C35; --c6-bg:#E8F5EE;
+    --c7:#6B3200; --c7-bg:#FFF0E4;
+    --adj:#4A148C;--adj-bg:#F3E5F5;
+    --prs:#1565C0;--prs-bg:#E3F2FD;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--texto);min-height:100vh;}
+
+  /* HEADER */
+  .header{background:linear-gradient(135deg,var(--az-osc) 0%,var(--az-med) 100%);color:white;padding:24px 40px;}
+  .header h1{font-size:20px;font-weight:700;letter-spacing:-.3px;}
+  .header p{font-size:13px;opacity:.8;margin-top:4px;}
+  .header-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .badge{display:inline-block;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;margin-left:8px;vertical-align:middle;}
+  .btn{padding:8px 16px;border-radius:6px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-white{background:white;color:var(--az-osc);}  .btn-white:hover{background:#e8f0fe;}
+  .btn-outline{background:transparent;color:white;border:1.5px solid rgba(255,255,255,.5);} .btn-outline:hover{background:rgba(255,255,255,.1);}
+  .btn-danger{background:#c62828;color:white;} .btn-danger:hover{background:#b71c1c;}
+  .btn-green{background:#2e7d32;color:white;}  .btn-green:hover{background:#1b5e20;}
+
+  /* LAYOUT */
+  .main{max-width:1280px;margin:0 auto;padding:24px 20px;}
+
+  /* GRUPOS */
+  .grupos-panel{background:white;border-radius:var(--radio);border:1px solid var(--borde);padding:18px 20px;margin-bottom:20px;box-shadow:var(--sombra);}
+  .grupos-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--borde);padding-bottom:10px;flex-wrap:wrap;gap:10px;}
+  .grupos-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--az-med);}
+  .grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+  .gc{border:2px solid var(--borde);border-radius:var(--radio);padding:12px 14px;cursor:pointer;transition:all .18s;position:relative;background:white;}
+  .gc:hover{border-color:var(--az-med);background:var(--az-bg);}
+  .gc.activo{border-color:var(--az-med);background:var(--az-bg);box-shadow:0 0 0 3px rgba(46,117,182,.15);}
+  .gc-bar{height:4px;border-radius:99px;margin-bottom:8px;}
+  .gc-nombre{font-size:13px;font-weight:700;padding-right:22px;margin-bottom:3px;}
+  .gc-integr{font-size:11px;color:var(--texto-sec);line-height:1.3;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .gc-meta{font-size:10px;color:var(--texto-sec);margin-bottom:4px;}
+  .gc-revs{font-size:11px;font-weight:700;color:var(--az-med);}
+  .gc-badge{position:absolute;top:8px;right:8px;background:var(--az-med);color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;}
+  .gc-actions{display:flex;gap:6px;margin-top:8px;}
+  .gc-btn{padding:3px 9px;font-size:11px;border-radius:4px;border:1px solid var(--borde);background:white;cursor:pointer;font-weight:600;color:var(--texto-sec);}
+  .gc-btn:hover{background:var(--gris);}
+  .gc-btn.del{color:var(--rojo);border-color:var(--rojo-bg);}  .gc-btn.del:hover{background:var(--rojo-bg);}
+  .grupos-empty{text-align:center;padding:24px;color:var(--texto-sec);font-size:13px;border:1px dashed var(--borde);border-radius:var(--radio);}
+
+  /* BANNER */
+  .no-grupo-banner{background:var(--amarillo-bg);border:1.5px dashed var(--naranja);border-radius:var(--radio);padding:24px;text-align:center;margin-bottom:20px;}
+  .no-grupo-banner h3{font-size:15px;font-weight:700;color:var(--naranja);margin-bottom:4px;}
+  .no-grupo-banner p{font-size:13px;color:var(--texto-sec);}
+  .gab{background:var(--az-bg);border:1.5px solid var(--az-med);border-radius:var(--radio);padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .gab-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+  .gab-info{flex:1;min-width:0;}
+  .gab-nombre{font-size:14px;font-weight:700;color:var(--az-osc);}
+  .gab-integr{font-size:12px;color:var(--texto-sec);margin-top:2px;}
+  .gab-seccion{font-size:11px;color:var(--az-med);}
+  .gab-revcount{background:var(--az-med);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+
+  /* SCORES */
+  .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .score-card{background:white;border-radius:var(--radio);padding:14px 18px;box-shadow:var(--sombra);border:1px solid var(--borde);}
+  .sc-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--texto-sec);margin-bottom:5px;}
+  .sc-val{font-size:26px;font-weight:700;color:var(--az-osc);line-height:1;}
+  .sc-val.aprobado{color:var(--verde);} .sc-val.reprobado{color:var(--rojo);}
+  .sc-sub{font-size:10px;color:var(--texto-sec);margin-top:4px;}
+  .prog-bar{height:6px;background:var(--gris);border-radius:99px;overflow:hidden;margin-top:7px;}
+  .prog-fill{height:100%;border-radius:99px;background:var(--az-med);transition:width .4s;}
+
+  /* SEC SCORES */
+  .sec-scores{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+  .sec-sc{border-radius:var(--radio);padding:10px 14px;border:1px solid;}
+  .sec-sc.c5{background:var(--c5-bg);border-color:var(--c5);}
+  .sec-sc.c6{background:var(--c6-bg);border-color:var(--c6);}
+  .sec-sc.c7{background:var(--c7-bg);border-color:var(--c7);}
+  .sec-sc.adj{background:var(--adj-bg);border-color:var(--adj);}
+  .sec-sc.prs{background:var(--prs-bg);border-color:var(--prs);}
+  .sec-sc .ss-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+  .c5 .ss-lbl{color:var(--c5);} .c6 .ss-lbl{color:var(--c6);} .c7 .ss-lbl{color:var(--c7);}
+  .adj .ss-lbl{color:var(--adj);} .prs .ss-lbl{color:var(--prs);}
+  .sec-sc .ss-val{font-size:18px;font-weight:800;}
+  .c5 .ss-val{color:var(--c5);} .c6 .ss-val{color:var(--c6);} .c7 .ss-val{color:var(--c7);}
+  .adj .ss-val{color:var(--adj);} .prs .ss-val{color:var(--prs);}
+  .sec-sc .ss-sub{font-size:10px;color:var(--texto-sec);margin-top:1px;}
+  .sec-bar{height:4px;border-radius:99px;background:rgba(0,0,0,.08);margin-top:6px;overflow:hidden;}
+  .sec-bar-fill{height:100%;border-radius:99px;transition:width .4s;}
+  .c5 .sec-bar-fill{background:var(--c5);} .c6 .sec-bar-fill{background:var(--c6);}
+  .c7 .sec-bar-fill{background:var(--c7);} .adj .sec-bar-fill{background:var(--adj);}
+  .prs .sec-bar-fill{background:var(--prs);}
+
+  /* DATOS */
+  .datos-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);padding:18px 20px;margin-bottom:18px;box-shadow:var(--sombra);}
+  .datos-card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--az-med);margin-bottom:12px;border-bottom:1px solid var(--borde);padding-bottom:7px;}
+  .datos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .ff label{display:block;font-size:10px;font-weight:600;color:var(--texto-sec);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+  .ff input{width:100%;padding:7px 10px;border:1.5px solid var(--borde);border-radius:6px;font-size:13px;background:var(--amarillo-bg);transition:border .15s;font-family:inherit;}
+  .ff input:focus{outline:none;border-color:var(--az-med);background:white;}
+
+  /* CRITERIOS */
+  .caso-sec{margin-bottom:24px;}
+  .caso-hdr{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:var(--radio) var(--radio) 0 0;color:white;}
+  .caso-hdr.c5{background:linear-gradient(90deg,#2d3a6a 0%,var(--c5) 100%);}
+  .caso-hdr.c6{background:linear-gradient(90deg,#0d3d22 0%,var(--c6) 100%);}
+  .caso-hdr.c7{background:linear-gradient(90deg,#451f00 0%,var(--c7) 100%);}
+  .caso-hdr.adj{background:linear-gradient(90deg,#2d0060 0%,var(--adj) 100%);}
+  .caso-hdr.prs{background:linear-gradient(90deg,#003a8a 0%,var(--prs) 100%);}
+  .caso-hdr-icon{font-size:20px;}
+  .caso-hdr-info h2{font-size:14px;font-weight:700;}
+  .caso-hdr-info p{font-size:11px;opacity:.85;margin-top:1px;}
+  .caso-hdr-pts{margin-left:auto;text-align:right;}
+  .caso-hdr-pts .chp-val{font-size:18px;font-weight:800;}
+  .caso-hdr-pts .chp-lbl{font-size:10px;opacity:.8;}
+
+  .crit-card{background:white;border:1px solid var(--borde);margin-bottom:8px;box-shadow:var(--sombra);overflow:hidden;}
+  .crit-card:last-child{border-radius:0 0 var(--radio) var(--radio);}
+  .crit-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;transition:background .12s;user-select:none;}
+  .crit-head:hover{background:var(--az-bg);}
+  .crit-head.has-v{border-left:4px solid var(--az-med);}
+  .ch-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+  .num-badge{width:26px;height:26px;border-radius:50%;background:var(--az-bg);color:var(--az-med);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .crit-nombre{font-size:13px;font-weight:600;}
+  .crit-desc{font-size:11px;color:var(--texto-sec);margin-top:1px;}
+  .ch-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .pts-pill{background:var(--az-bg);color:var(--az-osc);font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;min-width:72px;text-align:center;}
+  .pts-pill.filled{background:var(--az-med);color:white;}
+  .chevron{font-size:13px;color:var(--texto-sec);transition:transform .25s;}
+  .crit-card.open .chevron{transform:rotate(180deg);}
+  .crit-body{display:none;border-top:1px solid var(--borde);}
+  .crit-card.open .crit-body{display:block;}
+  .prog-ind{height:3px;background:var(--gris);}
+  .prog-ind-fill{height:100%;background:var(--az-med);transition:width .3s;}
+  .ind-grid{display:grid;grid-template-columns:repeat(5,1fr);}
+  .ind-col{border-right:1px solid var(--borde);}
+  .ind-col:last-child{border-right:none;}
+  .ind-head{padding:8px 10px;background:var(--gris);border-bottom:1px solid var(--borde);}
+  .ind-head-lbl{font-size:10px;font-weight:700;color:var(--az-osc);}
+  .ind-head-pts{font-size:9px;color:var(--texto-sec);margin-top:1px;}
+  .ind-body{padding:10px;}
+  .ind-desc{font-size:10.5px;color:var(--texto-sec);line-height:1.45;min-height:68px;margin-bottom:8px;}
+  .ind-desc.na{color:#bbb;font-style:italic;}
+  .ind-btn{width:100%;padding:6px;border:1.5px solid var(--borde);border-radius:6px;background:white;font-size:10.5px;font-weight:600;color:var(--texto-sec);cursor:pointer;transition:all .15s;text-align:center;}
+  .ind-btn:hover{border-color:var(--az-med);color:var(--az-med);background:var(--az-bg);}
+  .ind-col.selected .ind-head{background:var(--az-bg);}
+  .ind-col.selected .ind-btn{background:var(--az-med);color:white;border-color:var(--az-med);}
+  .ind-col.selected .ind-desc{color:var(--texto);font-weight:500;}
+  .fb-row{padding:10px 14px;background:var(--amarillo-bg);border-top:1px solid var(--borde);display:flex;align-items:flex-start;gap:8px;}
+  .fb-row label{font-size:10px;font-weight:700;color:var(--naranja);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;padding-top:8px;}
+  .fb-row textarea{flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:11.5px;font-family:inherit;background:white;resize:vertical;min-height:36px;transition:border .15s;}
+  .fb-row textarea:focus{outline:none;border-color:var(--naranja);}
+
+  /* RESUMEN */
+  .resumen-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-top:20px;box-shadow:var(--sombra);overflow:hidden;}
+  .resumen-card h3{padding:12px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--az-med);border-bottom:1px solid var(--borde);}
+  .res-tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .res-tbl th{padding:9px 12px;text-align:left;background:var(--gris);font-weight:700;color:var(--texto-sec);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  .res-tbl td{padding:8px 12px;border-top:1px solid var(--borde);}
+  .res-tbl tr:hover td{background:var(--az-bg);}
+  .chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:700;}
+  .chip.ok{background:var(--verde-bg);color:var(--verde);}
+  .chip.fail{background:var(--rojo-bg);color:var(--rojo);}
+  .chip.pend{background:var(--gris);color:var(--texto-sec);}
+  .sec-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9.5px;font-weight:700;margin-right:4px;}
+  .sec-tag.c5{background:var(--c5-bg);color:var(--c5);}
+  .sec-tag.c6{background:var(--c6-bg);color:var(--c6);}
+  .sec-tag.c7{background:var(--c7-bg);color:var(--c7);}
+  .sec-tag.adj{background:var(--adj-bg);color:var(--adj);}
+  .sec-tag.prs{background:var(--prs-bg);color:var(--prs);}
+
+  /* HISTORIAL */
+  .hist-section{margin-top:24px;}
+  .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .hist-hdr h2{font-size:14px;font-weight:700;color:var(--az-osc);display:flex;align-items:center;gap:8px;}
+  .hist-badge{background:var(--az-bg);color:var(--az-med);font-size:11px;padding:2px 9px;border-radius:99px;font-weight:700;}
+  .hist-empty{background:white;border:1px dashed var(--borde);border-radius:var(--radio);padding:28px;text-align:center;color:var(--texto-sec);font-size:13px;}
+  .hist-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:8px;box-shadow:var(--sombra);overflow:hidden;}
+  .hist-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;gap:12px;flex-wrap:wrap;}
+  .hist-info{flex:1;min-width:150px;}
+  .hist-nombre{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;}
+  .hist-meta{font-size:10.5px;color:var(--texto-sec);margin-top:2px;}
+  .hist-nota{font-size:20px;font-weight:800;min-width:44px;text-align:center;}
+  .hist-nota.ok{color:var(--verde);} .hist-nota.fail{color:var(--rojo);}
+  .hist-acts{display:flex;gap:6px;}
+  .btn-sm{padding:4px 10px;font-size:11.5px;border-radius:5px;border:1px solid var(--borde);background:white;cursor:pointer;font-weight:600;color:var(--texto-sec);}
+  .btn-sm:hover{background:var(--gris);}
+  .btn-sm.del{color:var(--rojo);border-color:var(--rojo-bg);}  .btn-sm.del:hover{background:var(--rojo-bg);}
+  .hist-det{display:none;border-top:1px solid var(--borde);padding:12px 16px;background:#fafbfc;}
+  .hist-det.open{display:block;}
+  .hist-det-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;}
+  .hdc{border-radius:6px;padding:8px 12px;}
+  .hdc.c5{background:var(--c5-bg);border:1px solid var(--c5);}
+  .hdc.c6{background:var(--c6-bg);border:1px solid var(--c6);}
+  .hdc.c7{background:var(--c7-bg);border:1px solid var(--c7);}
+  .hdc.adj{background:var(--adj-bg);border:1px solid var(--adj);}
+  .hdc.prs{background:var(--prs-bg);border:1px solid var(--prs);}
+  .hdc .hdc-lbl{font-size:10px;font-weight:700;}
+  .hdc.c5 .hdc-lbl{color:var(--c5);} .hdc.c6 .hdc-lbl{color:var(--c6);} .hdc.c7 .hdc-lbl{color:var(--c7);}
+  .hdc.adj .hdc-lbl{color:var(--adj);} .hdc.prs .hdc-lbl{color:var(--prs);}
+  .hdc .hdc-val{font-size:16px;font-weight:800;}
+  .hist-crit-tbl{width:100%;border-collapse:collapse;font-size:10.5px;}
+  .hist-crit-tbl th{padding:5px 9px;background:var(--gris);font-weight:700;color:var(--texto-sec);border:1px solid var(--borde);}
+  .hist-crit-tbl td{padding:5px 9px;border:1px solid var(--borde);}
+  .fb-txt{font-size:10.5px;color:var(--naranja);font-style:italic;}
+
+  /* MODAL */
+  .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal-ov.hidden{display:none;}
+  .modal-box{background:white;border-radius:10px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;}
+  .modal-head{background:linear-gradient(135deg,var(--az-osc),var(--az-med));color:white;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-head h3{font-size:15px;font-weight:700;}
+  .modal-x{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;}
+  .modal-x:hover{color:white;}
+  .modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .mf label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--texto-sec);margin-bottom:4px;}
+  .mf input,.mf textarea{width:100%;padding:8px 10px;border:1.5px solid var(--borde);border-radius:6px;font-size:13px;font-family:inherit;background:var(--amarillo-bg);transition:border .15s;}
+  .mf input:focus,.mf textarea:focus{outline:none;border-color:var(--az-med);background:white;}
+  .mf textarea{resize:vertical;min-height:58px;}
+  .color-picker{display:flex;gap:7px;flex-wrap:wrap;}
+  .cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;}
+  .cdot:hover{transform:scale(1.15);}
+  .cdot.sel{border-color:var(--texto);}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .mfr{display:flex;gap:8px;}
+  .btn-ms{padding:8px 18px;background:var(--az-med);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-ms:hover{background:var(--az-osc);}
+  .btn-mc{padding:8px 14px;background:white;color:var(--texto-sec);border:1px solid var(--borde);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-mc:hover{background:var(--gris);}
+  .btn-md{padding:8px 14px;background:white;color:var(--rojo);border:1px solid var(--rojo-bg);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-md:hover{background:var(--rojo-bg);}
+
+  /* DISABLED */
+  .eval-locked{pointer-events:none;opacity:.4;user-select:none;}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:22px;right:22px;background:var(--az-osc);color:white;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:9999;}
+  #toast.show{opacity:1;transform:translateY(0);}
+
+  @media(max-width:1000px){.score-grid{grid-template-columns:1fr 1fr;}.sec-scores{grid-template-columns:1fr 1fr;}}
+  @media(max-width:700px){.sec-scores{grid-template-columns:1fr;}.datos-grid{grid-template-columns:1fr;}.ind-grid{grid-template-columns:1fr 1fr;}.hist-det-grid{grid-template-columns:1fr 1fr;}.header{padding:18px;}.main{padding:12px;}}
+  @media(max-width:480px){.ind-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌐 Rúbrica EA2 — DRY7112 <span class="badge">Sumativa</span></h1>
+  <p>Evaluación Parcial 2 · Diseño de Plan de Direccionamiento, Protocolos de Enrutamiento y Voz y Video · Ponderación 30%</p>
+  <div class="header-actions">
+    <button class="btn btn-white"   onclick="guardarRevision()">💾 Guardar revisión</button>
+    <button class="btn btn-outline" onclick="nuevaRevision()">📋 Nueva evaluación</button>
+    <button class="btn btn-outline" onclick="exportarCSV()">⬇ CSV</button>
+    <button class="btn btn-outline" onclick="saveToFile()">📁 Guardar archivo</button>
+    <button class="btn btn-danger"  onclick="borrarHistorialGrupo()">🗑 Borrar historial</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- GRUPOS -->
+  <div class="grupos-panel">
+    <div class="grupos-head">
+      <h3>👥 Grupos</h3>
+      <button class="btn btn-green" onclick="abrirModal(null)">+ Nuevo grupo</button>
+    </div>
+    <div id="gruposGrid"></div>
+  </div>
+
+  <!-- SIN GRUPO -->
+  <div class="no-grupo-banner" id="noGrupoBanner">
+    <div style="font-size:32px;margin-bottom:6px">👆</div>
+    <h3>Selecciona un grupo para comenzar</h3>
+    <p>Haz clic en un grupo o crea uno nuevo para habilitar la evaluación.</p>
+  </div>
+
+  <div id="evalWrapper">
+    <!-- BANNER GRUPO ACTIVO -->
+    <div class="gab" id="gab" style="display:none">
+      <div class="gab-dot" id="gabDot"></div>
+      <div class="gab-info">
+        <div class="gab-nombre" id="gabNombre">—</div>
+        <div class="gab-integr" id="gabIntegr">—</div>
+        <div class="gab-seccion" id="gabSeccion"></div>
+      </div>
+      <span class="gab-revcount" id="gabRevCount">0 revisiones</span>
+    </div>
+
+    <!-- SCORES GLOBALES -->
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="sc-lbl">Puntaje obtenido</div>
+        <div class="sc-val" id="ptsTot">0 / 100</div>
+        <div class="prog-bar"><div class="prog-fill" id="globalBar" style="width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="sc-lbl">Porcentaje logrado</div>
+        <div class="sc-val" id="pctTot">0%</div>
+        <div class="sc-sub">Umbral aprobación: 60%</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-lbl">Nota final (1.0 – 7.0)</div>
+        <div class="sc-val" id="notaTot">—</div>
+        <div class="sc-sub" id="estadoSub">Sin calificar</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-lbl">Criterios evaluados</div>
+        <div class="sc-val" id="critCount">0 / 15</div>
+        <div class="sc-sub">de 15 criterios</div>
+      </div>
+    </div>
+
+    <!-- SCORES POR SECCIÓN -->
+    <div class="sec-scores">
+      <div class="sec-sc c5">
+        <div class="ss-lbl">📡 Caso 5 — IPv4/IPv6</div>
+        <div class="ss-val" id="s5pts">0 / 20</div>
+        <div class="ss-sub">3 criterios · max 20 pts</div>
+        <div class="sec-bar"><div class="sec-bar-fill" id="s5bar" style="width:0%"></div></div>
+      </div>
+      <div class="sec-sc c6">
+        <div class="ss-lbl">🔀 Caso 6 — IGP/EGP</div>
+        <div class="ss-val" id="s6pts">0 / 20</div>
+        <div class="ss-sub">3 criterios · max 20 pts</div>
+        <div class="sec-bar"><div class="sec-bar-fill" id="s6bar" style="width:0%"></div></div>
+      </div>
+      <div class="sec-sc c7">
+        <div class="ss-lbl">📞 Caso 7 — VoIP</div>
+        <div class="ss-val" id="s7pts">0 / 25</div>
+        <div class="ss-sub">3 criterios · max 25 pts</div>
+        <div class="sec-bar"><div class="sec-bar-fill" id="s7bar" style="width:0%"></div></div>
+      </div>
+      <div class="sec-sc adj">
+        <div class="ss-lbl">🔧 Ajustes</div>
+        <div class="ss-val" id="sapts">0 / 20</div>
+        <div class="ss-sub">4 criterios · max 20 pts</div>
+        <div class="sec-bar"><div class="sec-bar-fill" id="sabar" style="width:0%"></div></div>
+      </div>
+      <div class="sec-sc prs">
+        <div class="ss-lbl">🎤 Presentación</div>
+        <div class="ss-val" id="sppts">0 / 15</div>
+        <div class="ss-sub">2 criterios · max 15 pts</div>
+        <div class="sec-bar"><div class="sec-bar-fill" id="spbar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- DATOS REVISIÓN -->
+    <div class="datos-card">
+      <h3>📝 Datos de la revisión</h3>
+      <div class="datos-grid">
+        <div class="ff"><label>Docente evaluador</label><input type="text" id="fDocente" placeholder="Nombre del profesor"></div>
+        <div class="ff"><label>Fecha de evaluación</label><input type="date" id="fFecha"></div>
+        <div class="ff"><label>Observaciones</label><input type="text" id="fObs" placeholder="Notas adicionales..."></div>
+      </div>
+    </div>
+
+    <!-- CRITERIOS -->
+    <div id="criteriosContainer"></div>
+
+    <!-- RESUMEN -->
+    <div class="resumen-card">
+      <h3>📊 Resumen por criterio</h3>
+      <table class="res-tbl">
+        <thead><tr><th style="width:34px">#</th><th>Criterio</th><th style="width:80px">Sección</th><th style="width:120px">Nivel logrado</th><th style="width:80px">Pts obtenidos</th><th style="width:80px">Pts máx</th><th style="width:90px">Estado</th></tr></thead>
+        <tbody id="tablaBody"></tbody>
+        <tfoot id="tablaFoot"></tfoot>
+      </table>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="hist-section">
+      <div class="hist-hdr">
+        <h2>🗂 Historial del grupo <span class="hist-badge" id="histCount">0</span></h2>
+      </div>
+      <div id="historialContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GRUPO -->
+<div class="modal-ov hidden" id="modalGrupo">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitulo">Nuevo grupo</h3>
+      <button class="modal-x" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mf"><label>Nombre del grupo *</label><input type="text" id="mNombre" placeholder="Ej: Grupo 3"></div>
+      <div class="mf"><label>Integrantes</label><textarea id="mIntegrantes" placeholder="Ej: Ana García, Luis Pérez, María López..."></textarea></div>
+      <div class="mf"><label>Sección / Asignatura</label><input type="text" id="mSeccion" placeholder="Ej: DRY7112 — Sección 2"></div>
+      <div class="mf"><label>Color identificador</label><div class="color-picker" id="colorPicker"></div></div>
+    </div>
+    <div class="modal-footer">
+      <div><button class="btn-md" id="btnDelGrupo" onclick="eliminarGrupoModal()" style="display:none">🗑 Eliminar grupo</button></div>
+      <div class="mfr">
+        <button class="btn-mc" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-ms" onclick="guardarGrupoModal()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script id="revision-data" type="application/json">{"grupos":[],"historiales":{}}</script>
+<script>
+/* ═══════════════════════════════════════
+   CRITERIOS — 15 indicadores de evaluación
+   Escala: 100/80/60/30/0 % de ponderación
+═══════════════════════════════════════ */
+const CRITERIOS = [
+  // CASO 5
+  {id:0,sec:'c5',secLabel:'Caso 5',pond:10,
+   nombre:'Plan de direccionamiento IPv4/IPv6',
+   desc:'Tabla completa: IP, máscara/prefijo, puerta de enlace y DNS para todos los dispositivos',
+   niveles:[
+    'Realiza de manera completa tabla de direccionamiento IPv4/IPv6, indicando las direcciones IP, máscara de subred/prefijos, puertas de enlace predeterminada y DNS para todos los dispositivos de la red.',
+    'Realiza tabla de direccionamiento IPv4/IPv6 que cumple con 3 de 4 parámetros requeridos para todos los dispositivos de la red.',
+    'Realiza tabla de direccionamiento IPv4/IPv6 que cumple con 2 de 4 parámetros requeridos para todos los dispositivos de la red.',
+    'Realiza tabla de direccionamiento IPv4/IPv6 con escasa información requerida.',
+    'No realiza la tabla de direccionamiento IPv4/IPv6.']},
+  {id:1,sec:'c5',secLabel:'Caso 5',pond:4,
+   nombre:'Propuesta de traducciones IPv6 a IPv4',
+   desc:'Mecanismos de coexistencia (NAT64, dual-stack u otro) para permitir ambos protocolos',
+   niveles:[
+    'Propone y explica soluciones que permiten las traducciones de IPv6 a IPv4 en la infraestructura del cliente.',
+    null,
+    'Propone soluciones que permitan traducciones de IPv6 a IPv4 en la red del cliente, pero sin explicar motivos de su uso o implementación.',
+    null,
+    'No realiza propuesta de solución que permita realizar traducciones desde IPv6 a IPv4.']},
+  {id:2,sec:'c5',secLabel:'Caso 5',pond:6,
+   nombre:'Diseño de Red Actualizado (Caso 5)',
+   desc:'Actualización del diagrama de red incorporando todas las tecnologías del caso 5',
+   niveles:[
+    'Realiza actualización al diseño de red considerando todas las mejoras y cambios solicitados y requeridos en el presente caso.',
+    'Realiza actualización al diseño de red, considerando cambios solicitados e incluyendo la mayoría de los elementos del presente caso.',
+    'Realiza actualización al diseño de red, considerando cambios solicitados e incluyendo algunos del presente caso.',
+    'Realiza actualización al diseño de red, haciendo cambios muy pequeños al presentado en la Experiencia 1.',
+    'No hay actualización del diseño de red presentado en la Experiencia 1.']},
+  // CASO 6
+  {id:3,sec:'c6',secLabel:'Caso 6',pond:6,
+   nombre:'Propuesta de enrutamiento Intervlan',
+   desc:'Diseño de enrutamiento entre VLANs con solución justificada técnicamente',
+   niveles:[
+    'Realiza propuesta de enrutamiento intervlan, detallando el por qué de la solución para la comunicación para las distintas redes.',
+    'Realiza propuesta de enrutamiento intervlan, donde se explica con mayor cantidad de detalles sobre la solución escogida.',
+    'Realiza propuesta de enrutamiento intervlan, donde se explica de manera muy incompleta o imprecisa la solución escogida.',
+    'Realiza propuesta de enrutamiento intervlan, sin explicar el por qué de la solución escogida.',
+    'No realiza propuesta de enrutamiento intervlan para la comunicación de las distintas redes.']},
+  {id:4,sec:'c6',secLabel:'Caso 6',pond:7,
+   nombre:'Protocolo de enrutamiento IGP (OSPF/EIGRP)',
+   desc:'Propuesta fundamentada de OSPF y/o EIGRP con características y comparación',
+   niveles:[
+    'Realiza propuesta de protocolo OSPF y/o EIGRP explicando variadas características y realizando comparaciones y fundamentaciones del protocolo de enrutamiento.',
+    'Realiza propuesta de protocolo OSPF y/o EIGRP, explicando variadas características y realizando algunas fundamentaciones del protocolo de enrutamiento.',
+    'Realiza propuesta de protocolo OSPF y/o EIGRP, explicando algunas características del uso del protocolo de enrutamiento.',
+    'Considera propuesta de protocolo OSPF o EIGRP, pero sin explicar o detallar características de uso o implementación.',
+    'No considera propuesta de protocolo de enrutamiento IGP.']},
+  {id:5,sec:'c6',secLabel:'Caso 6',pond:7,
+   nombre:'Protocolo de enrutamiento EGP (BGP)',
+   desc:'Propuesta EGP con sistemas autónomos, atributos y métodos de conexión',
+   niveles:[
+    'Considera el uso de protocolo EGP teniendo en cuenta sistemas autónomos, atributos y métodos de conexión (los 3 elementos).',
+    'Considera el protocolo EGP incluyendo dos de tres elementos: sistemas autónomos, atributos o métodos de conexión.',
+    'Considera el protocolo EGP incluyendo uno de tres elementos: sistemas autónomos, atributos o métodos de conexión.',
+    'Considera el uso de protocolo EGP, sin considerar sistemas autónomos, atributos ni métodos de conexión.',
+    'No considera propuesta de uso de protocolo de enrutamiento EGP.']},
+  // CASO 7
+  {id:6,sec:'c7',secLabel:'Caso 7',pond:8,
+   nombre:'Infraestructura de telefonía IP (BE7000/BE4000)',
+   desc:'Modelos y características de servidores de comunicaciones unificadas (UC)',
+   niveles:[
+    'Considera infraestructura para telefonía digital y telepresencia, indicando los modelos y características de servidores a utilizar.',
+    'Determina infraestructura para telefonía digital y telepresencia, indicando modelos o características de servidores a utilizar.',
+    'Determina infraestructura para telefonía digital y telepresencia, pero no especifica modelos ni características de servidores.',
+    'Determina infraestructura, pero sin detallar si corresponde a telefonía digital o telepresencia.',
+    'No determina infraestructura requerida para telefonía digital y telepresencia.']},
+  {id:7,sec:'c7',secLabel:'Caso 7',pond:7,
+   nombre:'Herramienta de telepresencia',
+   desc:'Propuesta de solución de telepresencia con necesidad, uso y características',
+   niveles:[
+    'Propone herramienta de telepresencia, indicando necesidad, uso y características de las herramientas escogidas para satisfacer la necesidad del cliente.',
+    'Propone herramienta de telepresencia, indicando necesidades y características, pero presentando alguna inconsistencia en la necesidad del cliente.',
+    'Propone herramientas de telepresencia, indicando necesidades requeridas, pero sin indicar uso o características de la herramienta escogida.',
+    'Propone herramientas de telepresencia, pero sin indicar necesidad, uso ni característica de la herramienta escogida.',
+    'No propone herramienta de telepresencia para ser considerada en la infraestructura del cliente.']},
+  {id:8,sec:'c7',secLabel:'Caso 7',pond:10,
+   nombre:'Ancho de banda y calidad de servicio (QoS)',
+   desc:'Cálculos de BW y políticas QoS para telefonía y telepresencia con fundamentación técnica',
+   niveles:[
+    'Realiza propuesta de ancho de banda y calidad de servicio, con cálculos y fundamentación técnica para telefonía y telepresencia.',
+    'Realiza propuesta de ancho de banda o calidad de servicio, con cálculos y fundamentación técnica para la implementación.',
+    'Realiza propuesta de ancho de banda o calidad de servicio, con cálculos pero sin fundamentación técnica.',
+    'Realiza propuesta de ancho de banda o calidad de servicio, sin cálculos ni fundamentación técnica.',
+    'No realiza propuesta de ancho de banda ni calidad de servicio.']},
+  // AJUSTES
+  {id:9,sec:'adj',secLabel:'Ajustes',pond:5,
+   nombre:'Plan de direccionamiento escalable VLANs + DHCP',
+   desc:'Escalabilidad futura del plan IPv4/IPv6 con DHCP para crecimiento de la red',
+   niveles:[
+    'Considera un plan de direccionamiento escalable para VLAN y servicio DHCP a nivel de IPv4/IPv6 para la expansión futura de la red corporativa.',
+    'Considera plan de direccionamiento para VLAN y servicio DHCP a nivel de IPv4/IPv6, con algunos detalles para la escalabilidad en la red.',
+    'Considera plan de direccionamiento para VLAN o servicio DHCP para IPv4/IPv6, donde uno de ellos se considera con escalabilidad.',
+    'Considera plan de direccionamiento para VLAN o servicio DHCP para IPv4/IPv6, pero no es escalable para el futuro.',
+    'No considera plan de direccionamiento escalable para VLAN y servicio DHCP a nivel de IPv4/IPv6.']},
+  {id:10,sec:'adj',secLabel:'Ajustes',pond:5,
+   nombre:'Ajustes en IGP — Rutas sumarizadas',
+   desc:'Propuesta de sumarización de rutas IGP a nivel IPv4/IPv6 para mejorar estabilidad',
+   niveles:[
+    'Realiza propuestas de rutas sumarizadas para protocolos IGP a nivel de IPv4/IPv6 (ambos protocolos).',
+    null,
+    'Realiza propuesta de rutas sumarizadas para protocolos IGP a nivel de IPv4 o IPv6 (un protocolo).',
+    null,
+    'No realiza propuesta de rutas sumarizadas en la red del cliente.']},
+  {id:11,sec:'adj',secLabel:'Ajustes',pond:6,
+   nombre:'Tabla de distribución de anexos de telefonía',
+   desc:'Numeración de anexos con sitio central y coherencia con segmentación de red',
+   niveles:[
+    'Realiza tabla de distribución de anexos considerando la numeración de anexos, el sitio central y coherencia con la segmentación de red.',
+    'Realiza tabla de distribución de anexos considerando la numeración de anexos y el sitio central, con algunas inconsistencias en la segmentación.',
+    'Realiza tabla de distribución de anexos considerando parte de la numeración y el sitio central, pero sin coherencia con la segmentación.',
+    'Realiza tabla de distribución de anexos con inconsistencia en la numeración, sin sitio central ni coherencia con la segmentación.',
+    'No realiza tabla de distribución de anexos de telefonía.']},
+  {id:12,sec:'adj',secLabel:'Ajustes',pond:4,
+   nombre:'Diseño de Red Actualizado (Casos 6 y 7)',
+   desc:'Actualización del diagrama incorporando todas las tecnologías de los casos 6 y 7',
+   niveles:[
+    'Realiza actualización al diseño de red considerando todas las mejoras y cambios solicitados en los casos 6 y 7.',
+    'Realiza actualización al diseño de red, considerando cambios solicitados e incluyendo la mayoría de los elementos de los casos 6 y 7.',
+    'Realiza actualización al diseño de red, considerando cambios solicitados e incluyendo algunos de los casos 6 y 7.',
+    'Realiza actualización al diseño de red, haciendo cambios muy pequeños al presentado en la Experiencia 1.',
+    'No hay actualización del diseño de red presentado en la Experiencia 1.']},
+  // PRESENTACIÓN
+  {id:13,sec:'prs',secLabel:'Presentación',pond:7,
+   nombre:'Pregunta dirigida — Protocolos IGP/EGP',
+   desc:'Responde pregunta sobre características de IGP o EGP en ambiente corporativo',
+   niveles:[
+    'Responde la pregunta indicando todas las características de protocolos IGP o EGP dentro de un ambiente corporativo.',
+    null,
+    'Responde de manera parcial la pregunta sobre características de protocolos IGP o EGP dentro de un ambiente corporativo.',
+    null,
+    'No responde o responde de manera incorrecta.']},
+  {id:14,sec:'prs',secLabel:'Presentación',pond:8,
+   nombre:'Pregunta dirigida — Tecnologías de voz y video',
+   desc:'Responde pregunta sobre protocolos y tecnologías de voz/video en red empresarial',
+   niveles:[
+    'Responde indicando todos los elementos solicitados respecto a protocolos y tecnologías de voz y video en una red empresarial.',
+    null,
+    'Responde parcialmente respecto a protocolos y tecnologías de voz y video en una red empresarial.',
+    null,
+    'No responde o responde de manera incorrecta.']}
+];
+
+const NIVELES = [
+  {label:'Muy buen desempeño', pct:1.00, bg:'#E2EFDA', hdr:'2E6B2E'},
+  {label:'Buen desempeño',     pct:0.80, bg:'#F0F7F0', hdr:'375623'},
+  {label:'Desempeño aceptable',pct:0.60, bg:'#FFFFF0', hdr:'7B6000'},
+  {label:'Desempeño incipiente',pct:0.30,bg:'#FFF3E0', hdr:'C55A11'},
+  {label:'No logrado',         pct:0.00, bg:'#FCE4D6', hdr:'C62828'},
+];
+
+const SEC_INFO = {
+  c5: {icon:'📡',title:'Caso 5: Diseño del Direccionamiento IPv4/IPv6', cls:'c5', max:20, crits:[0,1,2]},
+  c6: {icon:'🔀',title:'Caso 6: Diseño de Protocolos IGP y EGP',       cls:'c6', max:20, crits:[3,4,5]},
+  c7: {icon:'📞',title:'Caso 7: Diseño de Solución de Voz y Video',     cls:'c7', max:25, crits:[6,7,8]},
+  adj:{icon:'🔧',title:'Ajustes y Mejoras a Casos Desarrollados',       cls:'adj',max:20, crits:[9,10,11,12]},
+  prs:{icon:'🎤',title:'Presentación del Encargo',                      cls:'prs',max:15, crits:[13,14]},
+};
+
+const N = CRITERIOS.length;
+const GROUP_COLORS = ['#2E75B6','#2A7A4B','#9B4A00','#7B2D8B','#C62828','#1565C0','#00695C','#E65100','#4A148C','#1B5E20'];
+const GRUPOS_KEY   = 'rubea2_grupos';
+const getHistKey   = gid => 'rubea2_hist_' + gid;
+
+let grupos = [], grupoActivo = null, editGrupoId = null, colorSel = GROUP_COLORS[0];
+let selected  = new Array(N).fill(-1);
+let feedbacks = new Array(N).fill('');
+
+/* ── Storage ── */
+function loadEmbed(){ try{return JSON.parse(document.getElementById('revision-data').textContent||'{"grupos":[],"historiales":{}}')}catch(e){return{grupos:[],historiales:{}};} }
+function loadGrupos(){
+  const local=JSON.parse(localStorage.getItem(GRUPOS_KEY)||'[]');
+  const emb=(loadEmbed().grupos||[]);
+  if(!local.length&&emb.length){localStorage.setItem(GRUPOS_KEY,JSON.stringify(emb));return emb;}
+  if(emb.length&&local.length){const ids=new Set(local.map(g=>g.id));return[...local,...emb.filter(g=>!ids.has(g.id))];}
+  return local;
+}
+function saveGruposLS(){localStorage.setItem(GRUPOS_KEY,JSON.stringify(grupos));}
+function loadHistGrupo(gid){
+  const local=JSON.parse(localStorage.getItem(getHistKey(gid))||'[]');
+  const emb=((loadEmbed().historiales||{})[gid]||[]);
+  if(!local.length&&emb.length){localStorage.setItem(getHistKey(gid),JSON.stringify(emb));return emb;}
+  if(emb.length&&local.length){const ids=new Set(local.map(r=>r.id));const m=[...local,...emb.filter(r=>!ids.has(r.id))];m.sort((a,b)=>b.id-a.id);return m;}
+  return local;
+}
+function saveHistGrupo(gid,arr){arr.sort((a,b)=>b.id-a.id);localStorage.setItem(getHistKey(gid),JSON.stringify(arr));}
+
+/* ── Grupos UI ── */
+function renderGrupos(){
+  const grid=document.getElementById('gruposGrid');
+  if(!grupos.length){grid.innerHTML='<div class="grupos-empty">Sin grupos aún. Haz clic en <b>+ Nuevo grupo</b> para comenzar.</div>';return;}
+  grid.innerHTML=grupos.map(g=>{
+    const hist=loadHistGrupo(g.id);
+    const act=grupoActivo&&grupoActivo.id===g.id;
+    return`<div class="gc${act?' activo':''}" onclick="seleccionarGrupo('${g.id}')">
+      ${act?'<span class="gc-badge">▶ Activo</span>':''}
+      <div class="gc-bar" style="background:${g.color}"></div>
+      <div class="gc-nombre">${esc(g.nombre)}</div>
+      ${g.integrantes?`<div class="gc-integr">${esc(g.integrantes)}</div>`:''}
+      ${g.seccion?`<div class="gc-meta">📚 ${esc(g.seccion)}</div>`:''}
+      <div class="gc-revs">🗂 ${hist.length} revisión${hist.length!==1?'es':''}</div>
+      <div class="gc-actions" onclick="event.stopPropagation()">
+        <button class="gc-btn" onclick="abrirModal('${g.id}')">✏ Editar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function seleccionarGrupo(gid){
+  const g=grupos.find(x=>x.id===gid);
+  if(!g)return;
+  const dirty=selected.some(s=>s>=0)||feedbacks.some(f=>f.trim());
+  if(grupoActivo&&grupoActivo.id!==gid&&dirty)
+    if(!confirm(`¿Cambiar al grupo "${g.nombre}"? Los cambios no guardados se perderán.`))return;
+  grupoActivo=g;
+  resetEval();
+  renderGrupos();
+  actualizarBanner();
+  setLocked(false);
+  renderCriterios();
+  updateScores();
+  updateTabla();
+  renderHistorial();
+  toast('✅ Grupo "'+g.nombre+'" seleccionado');
+}
+
+function actualizarBanner(){
+  const gab=document.getElementById('gab');
+  const nb=document.getElementById('noGrupoBanner');
+  if(!grupoActivo){gab.style.display='none';nb.style.display='';return;}
+  nb.style.display='none'; gab.style.display='';
+  document.getElementById('gabDot').style.background=grupoActivo.color;
+  document.getElementById('gabNombre').textContent=grupoActivo.nombre;
+  document.getElementById('gabIntegr').textContent=grupoActivo.integrantes||'Sin integrantes registrados';
+  document.getElementById('gabSeccion').textContent=grupoActivo.seccion||'';
+  const h=loadHistGrupo(grupoActivo.id);
+  document.getElementById('gabRevCount').textContent=h.length+' revisión'+(h.length!==1?'es':'');
+}
+
+function setLocked(locked){
+  const w=document.getElementById('evalWrapper');
+  locked?w.classList.add('eval-locked'):w.classList.remove('eval-locked');
+  document.getElementById('noGrupoBanner').style.display=locked?'':'none';
+}
+
+/* ── Modal ── */
+function abrirModal(gid){
+  editGrupoId=gid||null;
+  const g=gid?grupos.find(x=>x.id===gid):null;
+  document.getElementById('modalTitulo').textContent=g?'Editar grupo':'Nuevo grupo';
+  document.getElementById('mNombre').value=g?g.nombre:'';
+  document.getElementById('mIntegrantes').value=g?(g.integrantes||''):'';
+  document.getElementById('mSeccion').value=g?(g.seccion||''):'';
+  colorSel=g?g.color:GROUP_COLORS[grupos.length%GROUP_COLORS.length];
+  renderColorPicker();
+  document.getElementById('btnDelGrupo').style.display=g?'':'none';
+  document.getElementById('modalGrupo').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('mNombre').focus(),50);
+}
+
+function cerrarModal(){document.getElementById('modalGrupo').classList.add('hidden');editGrupoId=null;}
+function renderColorPicker(){
+  document.getElementById('colorPicker').innerHTML=GROUP_COLORS.map(c=>
+    `<div class="cdot${c===colorSel?' sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`
+  ).join('');
+}
+function selColor(c){colorSel=c;renderColorPicker();}
+
+function guardarGrupoModal(){
+  const nombre=document.getElementById('mNombre').value.trim();
+  if(!nombre){toast('⚠ Ingresa el nombre del grupo');return;}
+  if(editGrupoId){
+    const idx=grupos.findIndex(g=>g.id===editGrupoId);
+    if(idx>=0){
+      grupos[idx].nombre=nombre;
+      grupos[idx].integrantes=document.getElementById('mIntegrantes').value.trim();
+      grupos[idx].seccion=document.getElementById('mSeccion').value.trim();
+      grupos[idx].color=colorSel;
+      if(grupoActivo&&grupoActivo.id===editGrupoId){grupoActivo=grupos[idx];actualizarBanner();}
+      toast('✏ Grupo "'+nombre+'" actualizado');
+    }
+  } else {
+    const g={id:Date.now().toString(),nombre,
+      integrantes:document.getElementById('mIntegrantes').value.trim(),
+      seccion:document.getElementById('mSeccion').value.trim(),
+      color:colorSel};
+    grupos.push(g);
+    toast('✅ Grupo "'+nombre+'" creado');
+  }
+  saveGruposLS();cerrarModal();renderGrupos();
+}
+
+function eliminarGrupoModal(){
+  const g=grupos.find(x=>x.id===editGrupoId);if(!g)return;
+  const h=loadHistGrupo(g.id);
+  if(!confirm(`¿Eliminar el grupo "${g.nombre}"${h.length?' y sus '+h.length+' revisión'+(h.length!==1?'es':''):''}? Irreversible.`))return;
+  localStorage.removeItem(getHistKey(g.id));
+  grupos=grupos.filter(x=>x.id!==editGrupoId);
+  saveGruposLS();
+  if(grupoActivo&&grupoActivo.id===editGrupoId){
+    grupoActivo=null;setLocked(true);actualizarBanner();
+    resetEval();renderCriterios();updateScores();updateTabla();renderHistorial();
+  }
+  cerrarModal();renderGrupos();toast('🗑 Grupo eliminado');
+}
+
+/* ── Eval ── */
+function resetEval(){
+  selected=new Array(N).fill(-1);feedbacks=new Array(N).fill('');
+  document.getElementById('fDocente').value='';
+  document.getElementById('fFecha').value=new Date().toISOString().slice(0,10);
+  document.getElementById('fObs').value='';
+}
+
+function getPtsC(critId){
+  const sel=selected[critId];if(sel<0)return 0;
+  return Math.round(CRITERIOS[critId].pond*NIVELES[sel].pct*10)/10;
+}
+function getPtsSec(secKey){return CRITERIOS.filter(c=>c.sec===secKey).reduce((s,c)=>s+getPtsC(c.id),0);}
+function calcNota(pct){if(pct<0.6)return Math.round((1+(pct/0.6)*2.9)*10)/10;return Math.round((4+((pct-0.6)/0.4)*3)*10)/10;}
+
+function updateScores(){
+  const total=Math.round(CRITERIOS.reduce((s,c)=>s+getPtsC(c.id),0)*10)/10;
+  const pct=total/100;
+  const nota=calcNota(pct);
+  const count=selected.filter(x=>x>=0).length;
+  document.getElementById('ptsTot').textContent=total+' / 100';
+  document.getElementById('pctTot').textContent=Math.round(pct*100)+'%';
+  document.getElementById('globalBar').style.width=(pct*100)+'%';
+  document.getElementById('critCount').textContent=count+' / '+N;
+  const ne=document.getElementById('notaTot');const se=document.getElementById('estadoSub');
+  if(count>0){ne.textContent=nota.toFixed(1);ne.className='sc-val '+(nota>=4?'aprobado':'reprobado');se.textContent=nota>=4?'✓ Aprobado':'✗ Reprobado';}
+  else{ne.textContent='—';ne.className='sc-val';se.textContent='Sin calificar';}
+  Object.entries(SEC_INFO).forEach(([key,info])=>{
+    const pts=Math.round(getPtsSec(key)*10)/10;
+    const mx=info.max;
+    document.getElementById('s'+{c5:'5',c6:'6',c7:'7',adj:'a',prs:'p'}[key]+'pts').textContent=pts+' / '+mx;
+    document.getElementById('s'+{c5:'5',c6:'6',c7:'7',adj:'a',prs:'p'}[key]+'bar').style.width=(pts/mx*100)+'%';
+    const hd=document.getElementById('caso'+key+'headpts');if(hd)hd.textContent=pts+' / '+mx;
+  });
+}
+
+function updateTabla(){
+  const body=document.getElementById('tablaBody');
+  const foot=document.getElementById('tablaFoot');
+  body.innerHTML='';
+  CRITERIOS.forEach(c=>{
+    const sel=selected[c.id];const pts=getPtsC(c.id);
+    const info=SEC_INFO[c.sec];const row=document.createElement('tr');
+    let estado,nivel;
+    if(sel<0){estado='<span class="chip pend">Pendiente</span>';nivel='—';}
+    else{const ok=NIVELES[sel].pct>=0.6;estado='<span class="chip '+(ok?'ok':'fail')+'">'+(ok?'Logrado':'En desarrollo')+'</span>';nivel=NIVELES[sel].label;}
+    row.innerHTML=`<td style="color:var(--texto-sec);font-weight:700">${c.id+1}</td>
+      <td><span class="sec-tag ${c.sec}">${c.secLabel}</span>${c.nombre}</td>
+      <td><span class="sec-tag ${c.sec}">${info.icon}</span></td>
+      <td style="font-size:11px">${nivel}</td>
+      <td style="font-weight:700">${sel>=0?pts:'—'}</td>
+      <td style="color:var(--texto-sec)">${c.pond}</td>
+      <td>${estado}</td>`;
+    body.appendChild(row);
+  });
+  // Totales por sección
+  foot.innerHTML='';
+  Object.entries(SEC_INFO).forEach(([key,info])=>{
+    const pts=Math.round(getPtsSec(key)*10)/10;
+    const tr=document.createElement('tr');
+    tr.style.background='var(--az-bg)';
+    tr.innerHTML=`<td colspan="4" style="font-weight:700;font-size:11px;color:var(--az-osc)">${info.icon} ${info.title}</td>
+      <td style="font-weight:800;color:var(--az-osc)">${pts}</td>
+      <td style="color:var(--texto-sec)">${info.max}</td>
+      <td><span class="chip ${pts>=info.max*0.6?'ok':'fail'}">${Math.round(pts/info.max*100)}%</span></td>`;
+    foot.appendChild(tr);
+  });
+}
+
+/* ── Render criterios ── */
+function renderCriterios(){
+  const cont=document.getElementById('criteriosContainer');cont.innerHTML='';
+  Object.entries(SEC_INFO).forEach(([key,info])=>{
+    const crits=CRITERIOS.filter(c=>c.sec===key);
+    const sec=document.createElement('div');sec.className='caso-sec';
+    const pts=Math.round(getPtsSec(key)*10)/10;
+    sec.innerHTML=`<div class="caso-hdr ${key}">
+      <div class="caso-hdr-icon">${info.icon}</div>
+      <div class="caso-hdr-info"><h2>${info.title}</h2><p>${crits.length} criterios · máximo ${info.max} puntos</p></div>
+      <div class="caso-hdr-pts"><div class="chp-val" id="caso${key}headpts">${pts} / ${info.max}</div><div class="chp-lbl">puntos</div></div>
+    </div>`;
+    crits.forEach(c=>sec.appendChild(buildCritCard(c)));
+    cont.appendChild(sec);
+  });
+}
+
+function buildCritCard(c){
+  const div=document.createElement('div');
+  const sel=selected[c.id];const pts=getPtsC(c.id);const hasPts=sel>=0;
+  div.className='crit-card'+(hasPts?' open':'');div.id='card-'+c.id;
+  div.innerHTML=`
+    <div class="crit-head${hasPts?' has-v':''}" onclick="toggleCard(${c.id})">
+      <div class="ch-left">
+        <div class="num-badge">${c.id+1}</div>
+        <div><div class="crit-nombre">${c.nombre}</div><div class="crit-desc">${c.desc}</div></div>
+      </div>
+      <div class="ch-right">
+        <div class="pts-pill${hasPts?' filled':''}" id="pill-${c.id}">${hasPts?pts+' / '+c.pond+' pts':'— / '+c.pond+' pts'}</div>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="crit-body">
+      <div class="prog-ind"><div class="prog-ind-fill" id="prog-${c.id}" style="width:${hasPts?pts/c.pond*100:0}%"></div></div>
+      <div class="ind-grid">
+        ${NIVELES.map((niv,i)=>`
+          <div class="ind-col${sel===i?' selected':''}" id="col-${c.id}-${i}">
+            <div class="ind-head" style="background:#${niv.hdr}15">
+              <div class="ind-head-lbl" style="color:#${niv.hdr}">${niv.label}</div>
+              <div class="ind-head-pts">${Math.round(c.pond*niv.pct*10)/10} pts (${Math.round(niv.pct*100)}%)</div>
+            </div>
+            <div class="ind-body">
+              <div class="ind-desc${c.niveles[i]===null?' na':''}">${c.niveles[i]||'— Nivel no diferenciado —'}</div>
+              <button class="ind-btn" onclick="selectInd(${c.id},${i})">${sel===i?'✓ Seleccionado':'Seleccionar'}</button>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="fb-row">
+        <label>💬 Retroalimentación</label>
+        <textarea id="fb-${c.id}" placeholder="Comentarios formativos, fortalezas y aspectos a mejorar..." rows="2" oninput="saveFb(${c.id})">${feedbacks[c.id]||''}</textarea>
+      </div>
+    </div>`;
+  return div;
+}
+
+function toggleCard(id){document.getElementById('card-'+id).classList.toggle('open');}
+
+function selectInd(critId,indIdx){
+  if(!grupoActivo)return;
+  selected[critId]=indIdx;refreshCard(critId);updateScores();updateTabla();
+}
+function saveFb(critId){feedbacks[critId]=document.getElementById('fb-'+critId).value;}
+
+function refreshCard(id){
+  const c=CRITERIOS[id];const sel=selected[id];const pts=getPtsC(id);const hasPts=sel>=0;
+  const card=document.getElementById('card-'+id);
+  const head=card.querySelector('.crit-head');
+  hasPts?head.classList.add('has-v'):head.classList.remove('has-v');
+  const pill=document.getElementById('pill-'+id);
+  pill.textContent=hasPts?pts+' / '+c.pond+' pts':'— / '+c.pond+' pts';
+  hasPts?pill.classList.add('filled'):pill.classList.remove('filled');
+  document.getElementById('prog-'+id).style.width=hasPts?(pts/c.pond*100)+'%':'0%';
+  NIVELES.forEach((_,i)=>{
+    const col=document.getElementById('col-'+id+'-'+i);
+    const btn=col.querySelector('.ind-btn');
+    if(i===sel){col.classList.add('selected');btn.textContent='✓ Seleccionado';}
+    else{col.classList.remove('selected');btn.textContent='Seleccionar';}
+  });
+}
+
+/* ── Historial ── */
+function guardarRevision(){
+  if(!grupoActivo){toast('⚠ Selecciona un grupo primero');return;}
+  const hist=loadHistGrupo(grupoActivo.id);
+  const ptsSec={};
+  Object.keys(SEC_INFO).forEach(k=>ptsSec[k]=Math.round(getPtsSec(k)*10)/10);
+  const rev={
+    id:Date.now(),
+    docente:document.getElementById('fDocente').value.trim(),
+    fecha:document.getElementById('fFecha').value||new Date().toISOString().slice(0,10),
+    obs:document.getElementById('fObs').value.trim(),
+    selected:[...selected],feedbacks:[...feedbacks],
+    ptsTotal:Math.round(CRITERIOS.reduce((s,c)=>s+getPtsC(c.id),0)*10)/10,
+    ptsSec
+  };
+  hist.unshift(rev);saveHistGrupo(grupoActivo.id,hist);
+  actualizarBanner();renderGrupos();renderHistorial();
+  toast('💾 Revisión guardada para "'+grupoActivo.nombre+'"');
+}
+
+function nuevaRevision(){
+  if(!grupoActivo){toast('⚠ Selecciona un grupo primero');return;}
+  const dirty=selected.some(s=>s>=0)||feedbacks.some(f=>f.trim());
+  if(dirty&&!confirm('¿Iniciar nueva evaluación? Los cambios no guardados se perderán.'))return;
+  resetEval();renderCriterios();updateScores();updateTabla();toast('📋 Nueva evaluación iniciada');
+}
+
+function cargarRevision(revId){
+  if(!grupoActivo)return;
+  const rev=loadHistGrupo(grupoActivo.id).find(r=>r.id===revId);if(!rev)return;
+  selected=[...rev.selected];feedbacks=[...(rev.feedbacks||new Array(N).fill(''))];
+  document.getElementById('fDocente').value=rev.docente||'';
+  document.getElementById('fFecha').value=rev.fecha||'';
+  document.getElementById('fObs').value=rev.obs||'';
+  renderCriterios();updateScores();updateTabla();
+  window.scrollTo({top:0,behavior:'smooth'});toast('📂 Revisión cargada');
+}
+
+function eliminarRevision(revId){
+  if(!grupoActivo)return;
+  if(!confirm('¿Eliminar esta revisión?'))return;
+  const hist=loadHistGrupo(grupoActivo.id).filter(r=>r.id!==revId);
+  saveHistGrupo(grupoActivo.id,hist);actualizarBanner();renderGrupos();renderHistorial();toast('🗑 Revisión eliminada');
+}
+
+function borrarHistorialGrupo(){
+  if(!grupoActivo){toast('⚠ Selecciona un grupo primero');return;}
+  const h=loadHistGrupo(grupoActivo.id);
+  if(!h.length){toast('ℹ Sin revisiones para borrar');return;}
+  if(!confirm(`¿Borrar las ${h.length} revisión${h.length!==1?'es':''} del grupo "${grupoActivo.nombre}"?`))return;
+  localStorage.removeItem(getHistKey(grupoActivo.id));
+  actualizarBanner();renderGrupos();renderHistorial();toast('🗑 Historial del grupo borrado');
+}
+
+function toggleHistDet(revId){document.getElementById('hdet-'+revId).classList.toggle('open');}
+
+function renderHistorial(){
+  const cont=document.getElementById('historialContainer');
+  if(!grupoActivo){cont.innerHTML='<div class="hist-empty">Selecciona un grupo para ver su historial.</div>';document.getElementById('histCount').textContent='0';return;}
+  const hist=loadHistGrupo(grupoActivo.id);
+  document.getElementById('histCount').textContent=hist.length;
+  if(!hist.length){cont.innerHTML='<div class="hist-empty">📭 Sin revisiones para este grupo.<br>Completa la evaluación y presiona <b>💾 Guardar revisión</b>.</div>';return;}
+  const g=grupoActivo;
+  cont.innerHTML=hist.map(rev=>{
+    const nota=calcNota(rev.ptsTotal/100).toFixed(1);
+    const ok=parseFloat(nota)>=4;
+    const ps=rev.ptsSec||{};
+    return`<div class="hist-card">
+      <div class="hist-card-head">
+        <div class="hist-info">
+          <div class="hist-nombre"><span style="width:10px;height:10px;border-radius:50%;background:${g.color};display:inline-block;flex-shrink:0"></span>${esc(g.nombre)}</div>
+          <div class="hist-meta">${rev.fecha}${rev.docente?' · '+esc(rev.docente):''}${rev.obs?' · '+esc(rev.obs):''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="text-align:center"><div class="hist-nota ${ok?'ok':'fail'}">${nota}</div><div style="font-size:10px;color:var(--texto-sec)">${rev.ptsTotal}/100 pts</div></div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            ${Object.entries(SEC_INFO).map(([k,i])=>`<span style="font-size:10px;background:var(--${k}-bg,#eee);color:var(--${k},#333);padding:2px 7px;border-radius:4px;font-weight:700">${i.icon}${ps[k]||0}/${i.max}</span>`).join('')}
+          </div>
+        </div>
+        <div class="hist-acts">
+          <button class="btn-sm" onclick="toggleHistDet(${rev.id})">🔍 Ver</button>
+          <button class="btn-sm" onclick="cargarRevision(${rev.id})">📂 Cargar</button>
+          <button class="btn-sm del" onclick="eliminarRevision(${rev.id})">🗑</button>
+        </div>
+      </div>
+      <div class="hist-det" id="hdet-${rev.id}">
+        <div class="hist-det-grid">
+          ${Object.entries(SEC_INFO).map(([k,i])=>`<div class="hdc ${k}"><div class="hdc-lbl">${i.icon} ${i.title.split(':')[0]}</div><div class="hdc-val">${ps[k]||0} / ${i.max}</div></div>`).join('')}
+        </div>
+        <table class="hist-crit-tbl">
+          <thead><tr><th>#</th><th>Criterio</th><th>Nivel</th><th>Pts</th><th>Retroalimentación</th></tr></thead>
+          <tbody>${CRITERIOS.map(c=>{
+            const sel=(rev.selected||[])[c.id];
+            const fb=(rev.feedbacks||[])[c.id]||'';
+            const niv=sel>=0?NIVELES[sel].label:'—';
+            const pts=sel>=0?getPtsCtx(c,sel):'—';
+            return`<tr><td>${c.id+1}</td><td>${esc(c.nombre)}</td><td style="font-size:10.5px">${niv}</td><td>${pts}</td><td class="fb-txt">${esc(fb)||'—'}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+        ${rev.obs?`<div style="margin-top:8px;font-size:11px;color:var(--texto-sec)"><b>Obs:</b> ${esc(rev.obs)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getPtsCtx(c,sel){return Math.round(c.pond*NIVELES[sel].pct*10)/10;}
+
+/* ── CSV ── */
+function exportarCSV(){
+  if(!grupoActivo){toast('⚠ Selecciona un grupo primero');return;}
+  const hist=loadHistGrupo(grupoActivo.id);
+  if(!hist.length){toast('⚠ Sin revisiones para exportar');return;}
+  const head=['ID','Grupo','Fecha','Docente','Pts Total','Nota',
+    ...Object.entries(SEC_INFO).map(([k,i])=>'Pts '+i.title.split(':')[0]),
+    ...CRITERIOS.map(c=>'C'+(c.id+1)+' - '+c.nombre),
+    ...CRITERIOS.map(c=>'FB C'+(c.id+1))].join(';');
+  const rows=hist.map(rev=>{
+    const nota=calcNota(rev.ptsTotal/100).toFixed(1);
+    const ps=rev.ptsSec||{};
+    const secPts=Object.keys(SEC_INFO).map(k=>ps[k]||0);
+    const crits=CRITERIOS.map(c=>{const s=(rev.selected||[])[c.id];return s>=0?getPtsCtx(c,s):'';});
+    const fbs=CRITERIOS.map(c=>`"${((rev.feedbacks||[])[c.id]||'').replace(/"/g,'""')}"`);
+    return[rev.id,`"${grupoActivo.nombre}"`,rev.fecha,`"${rev.docente||''}"`,rev.ptsTotal,nota,...secPts,...crits,...fbs].join(';');
+  });
+  const blob=new Blob(['﻿'+[head,...rows].join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rubrica_ea2_'+grupoActivo.nombre.replace(/\s+/g,'_')+'.csv';a.click();
+  toast('⬇ CSV exportado');
+}
+
+/* ── Save to File ── */
+function saveToFile(){
+  const historiales={};
+  grupos.forEach(g=>{historiales[g.id]=loadHistGrupo(g.id);});
+  const clone=document.documentElement.cloneNode(true);
+  clone.querySelector('#revision-data').textContent=JSON.stringify({grupos,historiales});
+  const html='<!DOCTYPE html>\n'+clone.outerHTML;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rubrica_ea2_dry7112.html';a.click();
+  toast('📁 Archivo guardado con todos los grupos e historiales');
+}
+
+/* ── Utils ── */
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2800);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+document.getElementById('modalGrupo').addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal();});
+
+/* ── INIT ── */
+document.getElementById('fFecha').value=new Date().toISOString().slice(0,10);
+grupos=loadGrupos();
+renderGrupos();
+setLocked(true);
+actualizarBanner();
+renderCriterios();
+updateScores();
+updateTabla();
+renderHistorial();
+</script>
+</body>
+</html>
